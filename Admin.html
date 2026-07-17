@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#060B18">
+  <title>Fun2Money · Admin Panel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
+    :root {
+      --bg-primary: #060B18; --bg-secondary: #0C1430; --bg-card: #101836;
+      --accent: #4F6EF7; --success: #2DD4BF; --warning: #FBBF24; --danger: #FB7185;
+      --text-primary: #F1F5F9; --text-secondary: #94A3B8; --border-light: rgba(148,163,184,0.08);
+      --radius-xl: 20px; --radius-lg: 14px; --radius-md: 10px; --radius-full: 999px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body { background: var(--bg-primary); min-height: 100vh; color: var(--text-primary); display: flex; justify-content: center; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100vh; position: fixed; width: 100%; }
+    #app { width: 100%; max-width: 480px; height: 100vh; position: relative; background: var(--bg-primary); display: flex; flex-direction: column; overflow: hidden; }
+    .hidden { display: none !important; }
+    .flex { display: flex; } .flex-col { flex-direction: column; } .items-center { align-items: center; } .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 10px; } .mb-2 { margin-bottom: 14px; } .mt-2 { margin-top: 14px; } .w-full { width: 100%; }
+
+    button { min-height: 44px; padding: 10px 16px; border-radius: var(--radius-md); border: none; font-weight: 600; font-size: .85rem; cursor: pointer; transition: .15s; background: var(--accent); color: #fff; touch-action: manipulation; }
+    button:active { opacity: .85; transform: scale(.98); }
+    button.secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-light); }
+    button.success { background: var(--success); color: #000; }
+    button.danger { background: var(--danger); }
+    button.small { min-height: 32px; padding: 5px 10px; font-size: .75rem; }
+
+    input, select, textarea { width: 100%; min-height: 44px; padding: 0 12px; border-radius: var(--radius-md); border: 1.5px solid var(--border-light); background: var(--bg-card); color: var(--text-primary); font-size: .85rem; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    label { font-size: .7rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 4px; }
+
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; }
+    .login-bg { position: absolute; inset: 0; background: url('https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/21120.jpg') center/cover no-repeat; opacity: 0.3; z-index: 0; }
+    .login-card { position: relative; z-index: 1; background: rgba(16,24,54,.85); backdrop-filter: blur(10px); border-radius: var(--radius-xl); padding: 28px 22px; width: 100%; max-width: 360px; border: 1px solid rgba(255,255,255,0.1); }
+    .login-card .logo { font-size: 1.4rem; font-weight: 800; text-align: center; margin-bottom: 24px; color: #fff; }
+    .login-card .logo span { color: var(--accent); }
+    .login-card h3 { font-weight: 600; margin-bottom: 16px; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-primary); border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 20; flex-shrink: 0; }
+    .hamburger { font-size: 1.4rem; cursor: pointer; padding: 4px; color: var(--text-primary); }
+    .topbar-title { font-weight: 700; font-size: .95rem; }
+
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 90; opacity: 0; visibility: hidden; transition: .2s; }
+    .drawer-overlay.active { opacity: 1; visibility: visible; }
+    .drawer { position: fixed; top: 0; right: -100%; width: 80%; max-width: 300px; height: 100vh; background: linear-gradient(180deg, rgba(12,20,48,.95) 0%, rgba(6,11,24,.98) 100%), url('https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg') center/cover no-repeat; z-index: 100; padding: 20px 16px; transition: right .28s; overflow-y: auto; border-radius: 24px 0 0 24px; border-left: 1px solid var(--border-light); }
+    .drawer.active { right: 0; }
+    .drawer h4 { font-size: .7rem; font-weight: 700; margin: 10px 0 6px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; cursor: pointer; }
+    .drawer h4.active-section { color: var(--accent); }
+    .drawer-divider { border-top: 1px solid var(--border-light); margin: 8px 0; }
+
+    .sub-nav { display: flex; background: var(--bg-card); border-radius: 14px; padding: 3px; margin-bottom: 14px; border: 1px solid var(--border-light); flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .sub-nav::-webkit-scrollbar { display: none; }
+    .sub-nav-btn { flex: 1 0 auto; padding: 8px 10px; text-align: center; border-radius: 12px; font-weight: 500; background: transparent; color: var(--text-secondary); font-size: .68rem; cursor: pointer; min-height: 34px; white-space: nowrap; }
+    .sub-nav-btn.active { background: var(--accent); color: #fff; }
+
+    .main-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .page { padding: 10px 14px 80px; display: none; }
+    .page.active { display: block; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card { background: var(--bg-card); border-radius: var(--radius-lg); padding: 14px; border: 1px solid var(--border-light); }
+    .stat-card .label { font-size: .63rem; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+    .stat-card .value { font-size: 1.5rem; font-weight: 800; }
+
+    .activity-feed { display: flex; flex-direction: column; gap: 8px; }
+    .activity-item { background: var(--bg-card); border-radius: var(--radius-md); padding: 12px; border: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; }
+    .activity-item .info { font-size: .82rem; }
+    .activity-item .time { font-size: .68rem; color: var(--text-secondary); }
+
+    .section { background: var(--bg-card); border-radius: var(--radius-xl); padding: 16px; border: 1px solid var(--border-light); margin-bottom: 14px; }
+    .section h3 { font-weight: 700; font-size: .95rem; margin-bottom: 12px; }
+
+    .table-wrap { overflow: auto; border-radius: var(--radius-lg); border: 1px solid var(--border-light); }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th { text-align: left; padding: 10px 8px; color: var(--text-secondary); font-weight: 600; font-size: .63rem; border-bottom: 1px solid var(--border-light); text-transform: uppercase; background: var(--bg-card); }
+    td { padding: 10px 8px; border-bottom: 1px solid var(--border-light); font-size: .78rem; }
+
+    .badge { padding: 3px 8px; border-radius: var(--radius-full); font-size: .58rem; font-weight: 700; }
+    .badge-success { background: rgba(45,212,191,.15); color: var(--success); }
+    .badge-warning { background: rgba(251,191,36,.15); color: var(--warning); }
+    .badge-danger { background: rgba(251,113,133,.15); color: var(--danger); }
+
+    .txn-card { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px; margin-bottom: 10px; }
+    .txn-detail { font-size: .72rem; color: var(--text-secondary); margin-top: 4px; }
+
+    .toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: var(--bg-card); color: #fff; padding: 12px 24px; border-radius: var(--radius-full); z-index: 1000; border-left: 3px solid var(--accent); font-size: .85rem; white-space: nowrap; }
+    .empty { text-align: center; padding: 24px; color: var(--text-secondary); font-size: .85rem; }
+    .field-group { margin-bottom: 12px; }
+    .field-row { display: flex; gap: 8px; align-items: flex-end; }
+    .field-row .field-group { flex: 1; }
+    .field-row button { flex-shrink: 0; min-width: 40px; margin-bottom: 12px; }
+    .payment-color-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .payment-color-row input[type=color] { width: 36px; height: 36px; min-height: auto; padding: 2px; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="loginScreen" class="login-screen">
+    <div class="login-bg"></div>
+    <div class="login-card"><div class="logo">Fun2<span>Money</span></div><h3>Admin Login</h3><div class="flex flex-col gap-2"><input type="email" id="adminEmail" placeholder="Admin Email" value="admin@fun2money.com"><input type="password" id="adminPassword" placeholder="Password" value="admin123"><button onclick="adminLogin()">Sign In</button></div></div>
+  </div>
+
+  <div id="mainPanel" class="hidden" style="display:flex;flex-direction:column;height:100vh;">
+    <div class="topbar"><span class="hamburger" onclick="openDrawer()">☰</span><span class="topbar-title" id="topbarTitle">Dashboard</span><span></span></div>
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="drawer">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:800;color:#fff">Fun2<span style="color:var(--accent)">Money</span></span><span style="cursor:pointer;font-size:1.2rem;color:#fff" onclick="closeDrawer()">✕</span></div>
+      <h4 onclick="setDrawerSection('dashboard')" id="dh-dashboard" class="active-section">📊 Dashboard</h4><div class="drawer-divider"></div>
+      <h4 onclick="setDrawerSection('content')" id="dh-content">📦 Content</h4><div class="drawer-divider"></div>
+      <h4 onclick="setDrawerSection('users')" id="dh-users">👥 Users & Finance</h4><div class="drawer-divider"></div>
+      <h4 onclick="setDrawerSection('subadmin')" id="dh-subadmin">👑 Sub-Admin Manage</h4><div class="drawer-divider"></div>
+      <h4 onclick="setDrawerSection('appupdate')" id="dh-appupdate">📲 App Update</h4><div class="drawer-divider"></div>
+      <h4 onclick="setDrawerSection('settings')" id="dh-settings">⚙️ Settings</h4><div class="drawer-divider"></div>
+      <h4 onclick="adminLogout()" style="color:var(--danger);cursor:pointer">🚪 Logout</h4>
+    </div>
+
+    <div class="sub-nav" id="subNav"></div>
+
+    <div class="main-content" id="pageContainer">
+      <div id="page-dashboard" class="page active"><div class="stats-grid"><div class="stat-card"><div class="label">Players</div><div class="value" id="statPlayers">0</div></div><div class="stat-card"><div class="label">Deposits</div><div class="value" style="color:var(--success)" id="statDeposits">₹0</div></div><div class="stat-card"><div class="label">Pending</div><div class="value" style="color:var(--warning)" id="statPending">0</div></div><div class="stat-card"><div class="label">Tournaments</div><div class="value" style="color:var(--accent)" id="statTournaments">0</div></div></div><div class="section"><h3>Recent Activity</h3><div class="activity-feed" id="activityFeed"></div></div></div>
+      <div id="page-banners" class="page"><div class="section"><h3>Banners (Max 5 | 720×320px)</h3><div id="bannerList" class="mb-2"></div><button onclick="openAddBannerModal()">+ Add Banner</button><div class="mt-2 field-group"><label>Timer (ms)</label><input type="number" id="bannerTimer" placeholder="4000"><button onclick="updateBannerTimer()" class="mt-1">Update</button></div></div></div>
+      <div id="page-tournaments" class="page"><div class="section"><div class="flex justify-between items-center"><h3>Tournaments</h3><button onclick="openAddTournamentModal()">+ New</button></div><div id="tournamentList" class="mt-2"></div></div></div>
+      <div id="page-winners" class="page"><div class="section"><h3>Declare Winners</h3><p style="font-size:.7rem;color:var(--text-secondary);margin-bottom:8px">20min auto-reset</p><div id="winnersFields"></div><button onclick="addWinnerRow()" class="secondary w-full mt-1">+ Add Rank</button><button onclick="saveDirectWinners()" class="mt-2 w-full">Declare Winners</button></div></div>
+      <div id="page-users" class="page"><div class="section"><h3>Users</h3><div class="table-wrap"><table><thead><tr><th>Email</th><th>FN2M ID</th><th>Pass</th><th>UID</th><th>Balance</th><th>Status</th></tr></thead><tbody id="usersTable"></tbody></table></div></div></div>
+      <div id="page-approvals" class="page"><div class="section"><h3>Pending Requests</h3><div id="approvalsList"></div></div></div>
+      <div id="page-subadmin" class="page"><div class="section"><h3>Sub-Admin List</h3><div class="table-wrap"><table><thead><tr><th>Email</th><th>Contact</th><th>Balance</th><th>Status</th></tr></thead><tbody id="subAdminsTable"></tbody></table></div></div></div>
+      <div id="page-subrequests" class="page"><div class="section"><h3>Sub Withdrawals</h3><div id="subWithdrawalList"></div></div></div>
+      <div id="page-appupdate" class="page"><div class="section"><h3>App Update Alert</h3><div class="sub-nav" id="updateNav"><button class="sub-nav-btn active" onclick="switchUpdateTab('userapp',this)">User App</button><button class="sub-nav-btn" onclick="switchUpdateTab('subadminapp',this)">Sub-Admin App</button></div><div id="update-userapp"><div class="field-group"><label>Update Title</label><input id="userUpdateTitle" placeholder="New Update Available!"></div><div class="field-group"><label>Update Message</label><textarea id="userUpdateMsg" rows="3" placeholder="Update description..."></textarea></div><div class="field-group"><label>Update Button Text</label><input id="userUpdateBtn" placeholder="UPDATE NOW" value="UPDATE NOW"></div><button onclick="sendAppUpdate('user')" class="w-full success">📱 Send to User App</button></div><div id="update-subadminapp" class="hidden"><div class="field-group"><label>Update Title</label><input id="subUpdateTitle" placeholder="New Update Available!"></div><div class="field-group"><label>Update Message</label><textarea id="subUpdateMsg" rows="3" placeholder="Update description..."></textarea></div><div class="field-group"><label>Update Button Text</label><input id="subUpdateBtn" placeholder="UPDATE NOW" value="UPDATE NOW"></div><button onclick="sendAppUpdate('subadmin')" class="w-full success">📱 Send to Sub-Admin App</button></div></div></div>
+      <div id="page-settings" class="page"><div class="section"><h3>General</h3><div class="field-group"><label>Signup Bonus (₹)</label><input id="signupBonus" type="number" placeholder="0"></div><div class="field-group"><label>Telegram URL</label><input id="adminTelegramUrl" placeholder="https://t.me/..."></div><div class="field-group"><label>Get Key URL</label><input id="getKeyUrl" placeholder="https://..."></div><div class="field-group"><label>App Description</label><input id="adminAppDesc" placeholder="Fun2Money is..."></div><div class="field-group"><label>Base Player Count</label><input id="basePlayerCount" type="number" placeholder="0"></div><button onclick="saveSettings()" class="w-full">Save</button></div></div>
+      <div id="page-paymentUrls" class="page"><div class="section"><h3>Payment Buttons</h3><div id="paymentFields"></div><button onclick="addPaymentRow()" class="secondary w-full mt-1">+ Add Amount</button><button onclick="savePaymentUrls()" class="mt-2 w-full">Save</button></div></div>
+      <div id="page-socialLinks" class="page"><div class="section"><h3>Social Links</h3><div id="socialFields"></div><button onclick="addSocialRow()" class="secondary w-full mt-1">+ Add Social Link</button><button onclick="saveSocialLinks()" class="mt-2 w-full">Save</button></div></div>
+    </div>
+  </div>
+
+  <div id="modalOverlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px" onclick="closeModal()"><div class="section" style="max-width:420px;width:100%;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()"><div id="modalContent"></div></div></div>
+</div>
+
+<script>
+(function(){
+  const KEYS = { users:'fe_users', banners:'fe_banners', matches:'fe_matches', wallet:'fe_wallet', txns:'fe_txns', profiles:'fe_profiles', admin:'fe_admin', social:'fe_social', notifications:'fe_notifications', banned:'fe_banned', winners:'fe_winners', subwallet:'fe_wallet_sub', subprofiles:'fe_sub_profiles', appUpdate:'fe_app_update' };
+  const ADMIN = { email: 'admin@fun2money.com', password: 'admin123' };
+  const GAME_MODES = ['CLASH SQUAD','BATTLE ROYALE','LONG WOLF'];
+  const TEAM_MODES = { 'CLASH SQUAD':['SOLO','DUO','SQUAD','5V5','6V6'], 'BATTLE ROYALE':['SOLO','DUO','SQUAD'], 'LONG WOLF':['SOLO','DUO'] };
+  const MAP_TYPES = ['BERMUDA','NEXTERRA','ALPINE','PURGATORY','KALAHARI','SOLARA'];
+  let loggedIn = false, currentSection = 'dashboard', winnerRowCount = 3;
+  const CUTOFF_6H = 6*60*60*1000, CUTOFF_20M = 20*60*1000;
+  const drawerSections = {
+    dashboard: { title:'Dashboard', tabs:[] },
+    content: { title:'Content', tabs:[{id:'banners',label:'Banners'},{id:'tournaments',label:'Tournaments'},{id:'winners',label:'Winners'}] },
+    users: { title:'Users & Finance', tabs:[{id:'users',label:'Users'},{id:'approvals',label:'Requests'}] },
+    subadmin: { title:'Sub-Admin Manage', tabs:[{id:'subadmin',label:'SubAdmin'},{id:'subrequests',label:'Requests'}] },
+    appupdate: { title:'App Update', tabs:[{id:'appupdate',label:'Update'}] },
+    settings: { title:'Settings', tabs:[{id:'settings',label:'General'},{id:'paymentUrls',label:'Payment URLs'},{id:'socialLinks',label:'Social Links'}] }
+  };
+
+  function init() {
+    if(!localStorage.getItem(KEYS.admin)) localStorage.setItem(KEYS.admin, JSON.stringify({ signupBonus:0, bannerTimer:4000, telegramUrl:'', getKeyUrl:'', appDescription:'', basePlayerCount:0, paymentUrls:[], socialLinks:[] }));
+    if(!localStorage.getItem(KEYS.social)) localStorage.setItem(KEYS.social, JSON.stringify([]));
+    if(!localStorage.getItem(KEYS.subwallet)) localStorage.setItem(KEYS.subwallet, JSON.stringify({}));
+  }
+  function toast(m){ const t=document.createElement('div'); t.className='toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),2500); }
+  function formatDate(ts){ return new Date(ts).toLocaleString(); }
+  function formatCount(n){ if(n>=1e9) return (n/1e9).toFixed(1).replace(/\.0$/,'')+'B'; if(n>=1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'')+'M'; if(n>=1e3) return (n/1e3).toFixed(1).replace(/\.0$/,'')+'K'; return String(n); }
+
+  function cleanExpired(){
+    const now=Date.now();
+    let txns=JSON.parse(localStorage.getItem(KEYS.txns)||'[]'); txns=txns.filter(x=>(now-x.date)<CUTOFF_6H); localStorage.setItem(KEYS.txns,JSON.stringify(txns));
+    let winners=JSON.parse(localStorage.getItem(KEYS.winners)||'[]'); winners=winners.filter(x=>(now-x.timestamp)<CUTOFF_20M); localStorage.setItem(KEYS.winners,JSON.stringify(winners));
+    let n=JSON.parse(localStorage.getItem(KEYS.notifications)||'[]'); n=n.filter(x=>(now-x.timestamp)<CUTOFF_6H); localStorage.setItem(KEYS.notifications,JSON.stringify(n));
+  }
+
+  window.adminLogin = () => { const e=document.getElementById('adminEmail').value, p=document.getElementById('adminPassword').value; if(e===ADMIN.email && p===ADMIN.password){ loggedIn=true; cleanExpired(); document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainPanel').classList.remove('hidden'); setDrawerSection('dashboard'); } else toast('Invalid credentials'); };
+  window.adminLogout = () => { loggedIn=false; document.getElementById('mainPanel').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); };
+  window.openDrawer = () => { document.getElementById('drawerOverlay').classList.add('active'); document.getElementById('drawer').classList.add('active'); };
+  window.closeDrawer = () => { document.getElementById('drawerOverlay').classList.remove('active'); document.getElementById('drawer').classList.remove('active'); };
+
+  window.setDrawerSection = (section) => {
+    currentSection = section; closeDrawer();
+    document.querySelectorAll('.drawer h4').forEach(h=>h.classList.remove('active-section'));
+    document.getElementById('dh-'+section)?.classList.add('active-section');
+    const cfg = drawerSections[section];
+    document.getElementById('topbarTitle').textContent = cfg.title;
+    if(cfg.tabs.length){
+      document.getElementById('subNav').innerHTML = cfg.tabs.map((t,i)=>`<button class="sub-nav-btn ${i===0?'active':''}" onclick="switchSubTab('${t.id}',this)">${t.label}</button>`).join('');
+      document.getElementById('subNav').classList.remove('hidden');
+      switchSubTab(cfg.tabs[0].id, document.querySelector('.sub-nav-btn'));
+    } else { document.getElementById('subNav').innerHTML=''; document.getElementById('subNav').classList.add('hidden'); showPage('dashboard'); loadDashboard(); }
+  };
+
+  window.switchSubTab = (page, btn) => {
+    document.querySelectorAll('.sub-nav-btn').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active'); showPage(page); cleanExpired();
+    if(page==='dashboard') loadDashboard(); else if(page==='banners') loadBanners();
+    else if(page==='tournaments') loadTournaments(); else if(page==='winners') loadWinners();
+    else if(page==='users') loadUsers(); else if(page==='approvals') loadApprovals();
+    else if(page==='subadmin') loadSubAdmin(); else if(page==='subrequests') loadSubRequests();
+    else if(page==='appupdate') loadAppUpdate(); else if(page==='settings') loadSettings();
+    else if(page==='paymentUrls') loadPaymentUrls(); else if(page==='socialLinks') loadSocialLinks();
+  };
+
+  window.switchUpdateTab = (tab, btn) => {
+    document.querySelectorAll('#updateNav .sub-nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('update-userapp').classList.toggle('hidden', tab!=='userapp');
+    document.getElementById('update-subadminapp').classList.toggle('hidden', tab!=='subadminapp');
+  };
+
+  function showPage(id){ document.querySelectorAll('#pageContainer > .page').forEach(p=>p.classList.remove('active')); const el=document.getElementById('page-'+id); if(el) el.classList.add('active'); }
+
+  function loadDashboard(){
+    const users=JSON.parse(localStorage.getItem(KEYS.users)||'[]'); const admin=JSON.parse(localStorage.getItem(KEYS.admin)||'{}'); const txns=JSON.parse(localStorage.getItem(KEYS.txns)||'[]'); const matches=JSON.parse(localStorage.getItem(KEYS.matches)||'[]');
+    document.getElementById('statPlayers').textContent = formatCount((admin.basePlayerCount||0)+users.length);
+    document.getElementById('statDeposits').textContent = '₹'+txns.filter(t=>t.type==='deposit'&&t.status==='success').reduce((s,t)=>s+t.amount,0);
+    document.getElementById('statPending').textContent = txns.filter(t=>t.status==='pending').length;
+    document.getElementById('statTournaments').textContent = matches.filter(m=>m.status==='upcoming'||m.status==='live').length;
+    const recent=[...txns].sort((a,b)=>b.date-a.date).slice(0,10);
+    document.getElementById('activityFeed').innerHTML = recent.length ? recent.map(t=>`<div class="activity-item"><div class="info"><strong>${t.user}</strong> · ${t.type} ₹${t.amount} <span class="badge badge-${t.status==='success'?'success':t.status==='failed'?'danger':'warning'}">${t.status}</span></div><div class="time">${formatDate(t.date)}</div></div>`).join('') : '<div class="empty">No activity</div>';
+  }
+
+  function loadBanners(){ const b=JSON.parse(localStorage.getItem(KEYS.banners)||'[]'); document.getElementById('bannerList').innerHTML = b.map((b,i)=>`<div class="flex justify-between items-center" style="padding:8px;background:var(--bg-secondary);border-radius:8px;margin-bottom:6px"><span style="font-size:.78rem">${b.substring(0,40)}...</span><button class="danger small" onclick="removeBanner(${i})">✕</button></div>`).join(''); document.getElementById('bannerTimer').value = (JSON.parse(localStorage.getItem(KEYS.admin)||'{}').bannerTimer)||4000; }
+  window.removeBanner = (i)=>{ let b=JSON.parse(localStorage.getItem(KEYS.banners)||'[]'); b.splice(i,1); localStorage.setItem(KEYS.banners,JSON.stringify(b)); loadBanners(); };
+  window.openAddBannerModal = ()=>{ document.getElementById('modalContent').innerHTML=`<h4>Add Banner</h4><div class="field-group"><label>Image URL (720×320px)</label><input id="newBannerUrl" placeholder="https://..."></div><button onclick="addBanner()" class="mt-2 w-full">Add</button>`; document.getElementById('modalOverlay').classList.remove('hidden'); };
+  window.addBanner = ()=>{ const u=document.getElementById('newBannerUrl').value; if(!u) return toast('Enter URL'); let b=JSON.parse(localStorage.getItem(KEYS.banners)||'[]'); if(b.length>=5) return toast('Max 5'); b.push(u); localStorage.setItem(KEYS.banners,JSON.stringify(b)); closeModal(); loadBanners(); };
+  window.updateBannerTimer = ()=>{ const t=parseInt(document.getElementById('bannerTimer').value)||4000; let a=JSON.parse(localStorage.getItem(KEYS.admin)); a.bannerTimer=t; localStorage.setItem(KEYS.admin,JSON.stringify(a)); toast('Updated'); };
+
+  function loadTournaments(){ const m=JSON.parse(localStorage.getItem(KEYS.matches)||'[]'); document.getElementById('tournamentList').innerHTML = m.length ? m.map(x=>`<div class="flex justify-between items-center" style="padding:10px;background:var(--bg-secondary);border-radius:8px;margin-bottom:6px"><div><strong style="font-size:.82rem">${x.title}</strong><br><span class="badge badge-${x.status==='live'?'success':'warning'}">${x.status.toUpperCase()}</span></div><div class="flex gap-2"><button class="small" onclick="editTournament('${x.id}')">✏️</button><button class="small danger" onclick="deleteTournament('${x.id}')">🗑️</button></div></div>`).join('') : '<div class="empty">No tournaments</div>'; }
+
+  function getTournamentFormHTML(data={}){
+    const isEdit=!!data.id, gm=data.gameType||'CLASH SQUAD', tmOptions=TEAM_MODES[gm]||TEAM_MODES['CLASH SQUAD'];
+    return `<h4>${isEdit?'Edit':'Create'} Tournament</h4>
+      <div class="field-group"><label>Title</label><input id="tTitle" value="${data.title||''}" placeholder="Title"></div>
+      <div class="field-group"><label>Image URL</label><input id="tImage" value="${data.image||''}" placeholder="https://..."></div>
+      <div class="field-group"><label>Entry Fee (₹)</label><input id="tEntryFee" type="number" value="${data.entryFee||''}" placeholder="25"></div>
+      <div class="field-group"><label>Game Mode</label><select id="tGameType" onchange="updateTeamModeOptions()">${GAME_MODES.map(g=>`<option value="${g}" ${gm===g?'selected':''}>${g}</option>`).join('')}</select></div>
+      <div class="field-group"><label>Team Mode</label><select id="tTeamMode">${tmOptions.map(t=>`<option value="${t}" ${data.teamMode===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="field-group"><label>Map Type</label><select id="tMapType"><option value="">Select</option>${MAP_TYPES.map(m=>`<option value="${m}" ${data.mapType===m?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div class="field-group"><label>Per Kill (₹)</label><input id="tPerKill" type="number" value="${data.perKillPrize||''}" placeholder="5"></div>
+      <div class="field-group"><label>Win Prize (₹)</label><input id="tWinPrize" type="number" value="${data.winPrize||''}" placeholder="100"></div>
+      <div class="field-group"><label>Start Date & Time</label><input id="tStartTime" type="datetime-local" value="${data.startTime||''}"></div>
+      <div class="field-group"><label>Rules</label><textarea id="tRule" rows="3" placeholder="Rules...">${data.rule||''}</textarea></div>
+      <div class="field-group"><label>Status</label><select id="tStatus">${['upcoming','live','coming-soon'].map(s=>`<option value="${s}" ${data.status===s?'selected':''}>${s.toUpperCase().replace('-',' ')}</option>`).join('')}</select></div>
+      ${isEdit?`<div class="field-group"><label>Room ID</label><input id="eRoomId" value="${data.roomId||''}" placeholder="Room ID"></div><div class="field-group"><label>Password</label><input id="ePass" value="${data.password||''}" placeholder="Password"></div>`:''}
+      <button onclick="${isEdit?`updateTournament('${data.id}')`:'saveTournament()'}" class="mt-2 w-full">${isEdit?'Update':'Create'}</button>`;
+  }
+  window.updateTeamModeOptions = ()=>{ const gm=document.getElementById('tGameType').value; document.getElementById('tTeamMode').innerHTML=(TEAM_MODES[gm]||TEAM_MODES['CLASH SQUAD']).map(t=>`<option value="${t}">${t}</option>`).join(''); };
+  window.openAddTournamentModal = ()=>{ document.getElementById('modalContent').innerHTML=getTournamentFormHTML(); document.getElementById('modalOverlay').classList.remove('hidden'); };
+  window.saveTournament = ()=>{ const m={id:Date.now().toString(),title:document.getElementById('tTitle').value,image:document.getElementById('tImage').value,entryFee:+document.getElementById('tEntryFee').value,gameType:document.getElementById('tGameType').value,teamMode:document.getElementById('tTeamMode').value,mapType:document.getElementById('tMapType').value,perKillPrize:+document.getElementById('tPerKill').value,winPrize:+document.getElementById('tWinPrize').value,startTime:document.getElementById('tStartTime').value,rule:document.getElementById('tRule').value,status:document.getElementById('tStatus').value,roomId:'',password:''}; let l=JSON.parse(localStorage.getItem(KEYS.matches)||'[]'); l.push(m); localStorage.setItem(KEYS.matches,JSON.stringify(l)); closeModal(); loadTournaments(); toast('Created'); };
+  window.editTournament = (id)=>{ const m=JSON.parse(localStorage.getItem(KEYS.matches)||'[]').find(x=>x.id===id); if(!m) return; document.getElementById('modalContent').innerHTML=getTournamentFormHTML(m); document.getElementById('modalOverlay').classList.remove('hidden'); };
+  window.updateTournament = (id)=>{ let l=JSON.parse(localStorage.getItem(KEYS.matches)||'[]'); const i=l.findIndex(x=>x.id===id); if(i===-1) return; l[i]={...l[i],title:document.getElementById('tTitle').value,image:document.getElementById('tImage').value,entryFee:+document.getElementById('tEntryFee').value,gameType:document.getElementById('tGameType').value,teamMode:document.getElementById('tTeamMode').value,mapType:document.getElementById('tMapType').value,perKillPrize:+document.getElementById('tPerKill').value,winPrize:+document.getElementById('tWinPrize').value,startTime:document.getElementById('tStartTime').value,rule:document.getElementById('tRule').value,status:document.getElementById('tStatus').value,roomId:document.getElementById('eRoomId').value,password:document.getElementById('ePass').value}; localStorage.setItem(KEYS.matches,JSON.stringify(l)); closeModal(); loadTournaments(); toast('Updated'); };
+  window.deleteTournament = (id)=>{ if(!confirm('Delete?')) return; let l=JSON.parse(localStorage.getItem(KEYS.matches)||'[]').filter(x=>x.id!==id); localStorage.setItem(KEYS.matches,JSON.stringify(l)); loadTournaments(); toast('Deleted'); };
+
+  function loadWinners(){ const html=[]; for(let i=1;i<=winnerRowCount;i++) html.push(`<div class="field-group"><label>Rank ${i} - User ID</label><input id="w${i}User" placeholder="User ID/Email"></div><div class="field-group"><label>Rank ${i} - Prize (₹)</label><input id="w${i}Prize" type="number" placeholder="₹"></div>`); document.getElementById('winnersFields').innerHTML=html.join(''); }
+  window.addWinnerRow = ()=>{ winnerRowCount++; const div=document.createElement('div'); div.innerHTML=`<div class="field-group"><label>Rank ${winnerRowCount} - User ID</label><input id="w${winnerRowCount}User" placeholder="User ID/Email"></div><div class="field-group"><label>Rank ${winnerRowCount} - Prize (₹)</label><input id="w${winnerRowCount}Prize" type="number" placeholder="₹"></div>`; document.getElementById('winnersFields').appendChild(div); };
+  window.saveDirectWinners = ()=>{ const w=[]; for(let i=1;i<=winnerRowCount;i++){ const u=document.getElementById(`w${i}User`)?.value.trim(),p=+document.getElementById(`w${i}Prize`)?.value; if(u&&p) w.push({user:u,rank:i,prize:p,paid:false,timestamp:Date.now()}); } if(!w.length) return toast('Enter at least 1'); let all=JSON.parse(localStorage.getItem(KEYS.winners)||'[]'); all=w.concat(all); localStorage.setItem(KEYS.winners,JSON.stringify(all)); toast('Declared'); };
+
+  function loadUsers(){ const users=JSON.parse(localStorage.getItem(KEYS.users)||'[]'),profiles=JSON.parse(localStorage.getItem(KEYS.profiles)||'{}'),wallet=JSON.parse(localStorage.getItem(KEYS.wallet)||'{}'),banned=JSON.parse(localStorage.getItem(KEYS.banned)||'{}'); document.getElementById('usersTable').innerHTML=users.map(u=>{ const p=profiles[u.email]||{},isB=banned[u.email]; return `<tr><td style="font-size:.7rem">${u.email}</td><td>${p.userId||u.userId||'-'}</td><td>${u.password||'-'}</td><td>${p.uid||'-'}</td><td style="cursor:pointer;color:var(--accent);font-weight:600" onclick="editBalance('${u.email}')">₹${wallet[u.email]||0}</td><td><button class="small ${isB?'success':'danger'}" onclick="toggleBan('${u.email}')">${isB?'Unban':'Ban'}</button></td></tr>`; }).join(''); }
+  window.editBalance = (email)=>{ const w=JSON.parse(localStorage.getItem(KEYS.wallet)||'{}'),v=prompt('Balance:',w[email]||0); if(v===null) return; const n=parseFloat(v); if(isNaN(n)||n<0) return toast('Invalid'); w[email]=n; localStorage.setItem(KEYS.wallet,JSON.stringify(w)); loadUsers(); toast('Updated'); };
+  window.toggleBan = (email)=>{ const b=JSON.parse(localStorage.getItem(KEYS.banned)||'{}'); b[email]=!b[email]; localStorage.setItem(KEYS.banned,JSON.stringify(b)); loadUsers(); toast(b[email]?'Banned':'Unbanned'); };
+
+  function loadApprovals(){ const txns=JSON.parse(localStorage.getItem(KEYS.txns)||'[]').filter(t=>t.status==='pending'); document.getElementById('approvalsList').innerHTML=txns.length?txns.map(t=>`<div class="txn-card"><div class="flex justify-between"><span class="badge ${t.type==='deposit'?'badge-success':'badge-warning'}">${t.type.toUpperCase()}</span><strong>₹${t.amount}</strong></div><div class="txn-detail">${t.user} | ${t.details||t.ref||''}</div><div class="flex justify-end gap-2 mt-2"><button class="small success" onclick="approveTxn('${t.id}')">✔</button><button class="small danger" onclick="rejectTxn('${t.id}')">✖</button></div></div>`).join(''):'<div class="empty">No pending</div>'; }
+  window.approveTxn = (id)=>{ let txns=JSON.parse(localStorage.getItem(KEYS.txns)||'[]'),txn=txns.find(t=>t.id==id); if(!txn) return; txn.status='success'; if(txn.type==='deposit'){ const w=JSON.parse(localStorage.getItem(KEYS.wallet)); w[txn.user]=(w[txn.user]||0)+txn.amount; localStorage.setItem(KEYS.wallet,JSON.stringify(w)); } localStorage.setItem(KEYS.txns,JSON.stringify(txns)); loadApprovals(); loadDashboard(); toast('Approved'); };
+  window.rejectTxn = (id)=>{ let txns=JSON.parse(localStorage.getItem(KEYS.txns)||'[]'),txn=txns.find(t=>t.id==id); if(!txn) return; txn.status='failed'; if(txn.type==='withdraw'||txn.type==='sub_withdraw'){ const w=JSON.parse(localStorage.getItem(txn.type==='sub_withdraw'?KEYS.subwallet:KEYS.wallet)); w[txn.user]=(w[txn.user]||0)+txn.amount; localStorage.setItem(txn.type==='sub_withdraw'?KEYS.subwallet:KEYS.wallet,JSON.stringify(w)); } localStorage.setItem(KEYS.txns,JSON.stringify(txns)); loadApprovals(); loadDashboard(); toast('Rejected & Refunded'); };
+
+  function loadSubAdmin(){ const p=JSON.parse(localStorage.getItem(KEYS.subprofiles)||'{}'),w=JSON.parse(localStorage.getItem(KEYS.subwallet)||'{}'); document.getElementById('subAdminsTable').innerHTML=Object.entries(p).length?Object.entries(p).map(([email,pr])=>`<tr><td style="font-size:.72rem">${email}</td><td>${pr.contact||'-'}</td><td style="cursor:pointer;color:var(--accent);font-weight:600" onclick="editSubBalance('${email}')">₹${w[email]||0}</td><td><button class="small ${pr.status==='active'?'success':'danger'}" onclick="toggleSubStatus('${email}')">${pr.status==='active'?'Active':'Deactive'}</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">No sub-admins</td></tr>'; }
+  window.toggleSubStatus = (email)=>{ let p=JSON.parse(localStorage.getItem(KEYS.subprofiles)||'{}'); p[email].status=p[email].status==='active'?'deactive':'active'; localStorage.setItem(KEYS.subprofiles,JSON.stringify(p)); loadSubAdmin(); };
+  window.editSubBalance = (email)=>{ const w=JSON.parse(localStorage.getItem(KEYS.subwallet)||'{}'),v=prompt('Balance:',w[email]||0); if(v!==null&&!isNaN(v)){ w[email]=parseFloat(v); localStorage.setItem(KEYS.subwallet,JSON.stringify(w)); loadSubAdmin(); }};
+
+  function loadSubRequests(){ const txns=JSON.parse(localStorage.getItem(KEYS.txns)||'[]').filter(t=>t.type==='sub_withdraw'&&t.status==='pending'); document.getElementById('subWithdrawalList').innerHTML=txns.length?txns.map(t=>`<div class="txn-card"><div class="flex justify-between"><span>₹${t.amount}</span><small>${formatDate(t.date)}</small></div><div class="txn-detail">${t.details||t.ref}</div><div class="flex justify-end gap-2 mt-2"><button class="small success" onclick="approveTxn('${t.id}')">✔</button><button class="small danger" onclick="rejectTxn('${t.id}')">✖</button></div></div>`).join(''):'<div class="empty">No pending</div>'; }
+
+  function loadAppUpdate(){ const au=JSON.parse(localStorage.getItem(KEYS.appUpdate)||'{}'); document.getElementById('userUpdateTitle').value=au.user?.title||''; document.getElementById('userUpdateMsg').value=au.user?.msg||''; document.getElementById('userUpdateBtn').value=au.user?.btn||'UPDATE NOW'; document.getElementById('subUpdateTitle').value=au.subadmin?.title||''; document.getElementById('subUpdateMsg').value=au.subadmin?.msg||''; document.getElementById('subUpdateBtn').value=au.subadmin?.btn||'UPDATE NOW'; }
+  window.sendAppUpdate = (type) => { const au=JSON.parse(localStorage.getItem(KEYS.appUpdate)||'{}'); if(type==='user') au.user={title:document.getElementById('userUpdateTitle').value,msg:document.getElementById('userUpdateMsg').value,btn:document.getElementById('userUpdateBtn').value,active:true,timestamp:Date.now()}; else au.subadmin={title:document.getElementById('subUpdateTitle').value,msg:document.getElementById('subUpdateMsg').value,btn:document.getElementById('subUpdateBtn').value,active:true,timestamp:Date.now()}; localStorage.setItem(KEYS.appUpdate,JSON.stringify(au)); toast('Update Alert Sent!'); };
+
+  function loadSettings(){ const a=JSON.parse(localStorage.getItem(KEYS.admin)||'{}'); document.getElementById('signupBonus').value=a.signupBonus||0; document.getElementById('adminTelegramUrl').value=a.telegramUrl||''; document.getElementById('getKeyUrl').value=a.getKeyUrl||''; document.getElementById('adminAppDesc').value=a.appDescription||''; document.getElementById('basePlayerCount').value=a.basePlayerCount||0; }
+  window.saveSettings = ()=>{ const a=JSON.parse(localStorage.getItem(KEYS.admin)||'{}'); a.signupBonus=+document.getElementById('signupBonus').value; a.telegramUrl=document.getElementById('adminTelegramUrl').value; a.getKeyUrl=document.getElementById('getKeyUrl').value; a.appDescription=document.getElementById('adminAppDesc').value; a.basePlayerCount=+document.getElementById('basePlayerCount').value; localStorage.setItem(KEYS.admin,JSON.stringify(a)); toast('Saved'); };
+
+  function loadPaymentUrls(){ const a=JSON.parse(localStorage.getItem(KEYS.admin)||'{}'), pu=a.paymentUrls||[]; const colors=['#0f9d58','#e17055','#6c5ce7','#0984e3','#00b894','#e84393','#fdcb6e','#74b9ff']; document.getElementById('paymentFields').innerHTML = pu.map((p,i)=>`<div class="field-row"><div class="field-group"><label>Amount (₹)</label><input id="payAmt${i}" value="${p.amt||''}" type="number" placeholder="Amt"></div><div class="field-group"><label>UPI URL</label><input id="payUrl${i}" value="${p.url||''}" placeholder="upi://pay?..."></div><div class="payment-color-row"><label>Color</label><input type="color" id="payColor${i}" value="${p.color||colors[i%colors.length]}"></div><button class="danger small" onclick="removePaymentRow(${i})">✕</button></div>`).join(''); }
+  window.addPaymentRow = ()=>{ const a=JSON.parse(localStorage.getItem(KEYS.admin)||'{}'), pu=a.paymentUrls||[]; pu.push({amt:'',url:'',color:'#0f9d58'}); a.paymentUrls=pu; localStorage.setItem(KEYS.admin,JSON.stringify(a)); loadPaymentUrls(); };
+  window.removePaymentRow = (i)=>{ const a=JSON.parse(localStorage.getItem(KEYS.admin)||'{}'); a.paymentUrls.splice(i,1); localStorage.setItem(KEYS.admin,JSON.stringify(a)); loadPaymentUrls(); };
+  window.savePaymentUrls = ()=>{ const a=JSON.parse(localStorage.getItem(KEYS.admin)||'{}'), pu=[]; document.querySelectorAll('#paymentFields .field-row').forEach((row,idx)=>{ const amt=+document.getElementById(`payAmt${idx}`)?.value, url=document.getElementById(`payUrl${idx}`)?.value, color=document.getElementById(`payColor${idx}`)?.value; if(amt&&url) pu.push({amt,url,color}); }); a.paymentUrls=pu; localStorage.setItem(KEYS.admin,JSON.stringify(a)); toast('Saved'); };
+
+  function loadSocialLinks(){ const sl=JSON.parse(localStorage.getItem(KEYS.social)||'[]'); document.getElementById('socialFields').innerHTML = sl.map((s,i)=>`<div class="field-row"><div class="field-group"><label>Name</label><input id="sName${i}" value="${s.name||''}" placeholder="Name"></div><div class="field-group"><label>Icon URL</label><input id="sIcon${i}" value="${s.iconUrl||''}" placeholder="Icon"></div><div class="field-group"><label>Link</label><input id="sLink${i}" value="${s.linkUrl||''}" placeholder="Link"></div><button class="danger small" onclick="removeSocialRow(${i})">✕</button></div>`).join(''); }
+  window.addSocialRow = ()=>{ const sl=JSON.parse(localStorage.getItem(KEYS.social)||'[]'); sl.push({name:'',iconUrl:'',linkUrl:''}); localStorage.setItem(KEYS.social,JSON.stringify(sl)); loadSocialLinks(); };
+  window.removeSocialRow = (i)=>{ const sl=JSON.parse(localStorage.getItem(KEYS.social)||'[]'); sl.splice(i,1); localStorage.setItem(KEYS.social,JSON.stringify(sl)); loadSocialLinks(); };
+  window.saveSocialLinks = ()=>{ const sl=[]; document.querySelectorAll('#socialFields .field-row').forEach((row,idx)=>{ const name=document.getElementById(`sName${idx}`)?.value, icon=document.getElementById(`sIcon${idx}`)?.value, link=document.getElementById(`sLink${idx}`)?.value; if(name&&icon&&link) sl.push({name,iconUrl:icon,linkUrl:link}); }); localStorage.setItem(KEYS.social,JSON.stringify(sl)); toast('Saved'); };
+
+  window.closeModal = ()=>{ document.getElementById('modalOverlay').classList.add('hidden'); };
+  init();
+})();
+</script>
+</body>
+</html>
