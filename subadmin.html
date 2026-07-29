@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#060B18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FN2M SubAdmin">
 <title>Fun2Money SubAdmin</title>
 <style>
 :root{
@@ -203,6 +208,51 @@ label{display:block;font-size:12px;color:var(--muted);margin:8px 2px 6px}
   .table-row > *:nth-child(3), .table-row > *:nth-child(4){grid-column:1 / -1}
 }
 </style>
+<!-- FULLSCREEN STANDALONE PWA MANIFEST FOR SUBADMIN -->
+<script>
+const PWA_ICON_URL = "https://uploads.onecompiler.io/44jqs6n4d/1785233140328/67382.png";
+
+const manifestObj = {
+  "id": "/fun2money-subadmin-pro",
+  "name": "Fun2Money SubAdmin",
+  "short_name": "FN2M SubAdmin",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "background_color": "#060B18",
+  "theme_color": "#060B18",
+  "orientation": "portrait",
+  "icons": [
+    { "src": PWA_ICON_URL, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": PWA_ICON_URL, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+};
+
+const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
+const manifestURL = URL.createObjectURL(manifestBlob);
+const linkManifest = document.createElement('link');
+linkManifest.rel = 'manifest';
+linkManifest.href = manifestURL;
+document.head.appendChild(linkManifest);
+
+const linkIcon = document.createElement('link');
+linkIcon.rel = 'apple-touch-icon';
+linkIcon.href = PWA_ICON_URL;
+document.head.appendChild(linkIcon);
+
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    self.addEventListener('install', (e) => self.skipWaiting());
+    self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+    self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
