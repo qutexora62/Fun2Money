@@ -172,7 +172,7 @@ label{display:block;font-size:12px;color:var(--muted);margin:8px 2px 4px;font-we
   z-index:30;
 }
 .bottom-nav-grid{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:center;height:100%;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:center;height:100%;
 }
 .nav-tab{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -386,6 +386,17 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
 
+        <!-- SubAdmin Management Card -->
+        <div class="card">
+          <div class="row between" style="margin-bottom:8px">
+            <div class="h3">SubAdmin Management</div>
+            <button class="primary-btn" id="addSubBtn" style="padding:6px 10px;font-size:12px">+ Add SubAdmin</button>
+          </div>
+          <div class="table-container">
+            <div id="subAdminTable" class="table"></div>
+          </div>
+        </div>
+
         <!-- Requests & Finance Card -->
         <div class="card">
           <div class="row between" style="margin-bottom:10px">
@@ -393,19 +404,6 @@ if ('serviceWorker' in navigator) {
             <span class="badge red">Pending Actions</span>
           </div>
           <div id="pendingRequestsList" class="grid"></div>
-        </div>
-      </div>
-
-      <!-- PAGE: SUBADMIN -->
-      <div class="page-view hidden" id="page-subadmin">
-        <div class="card">
-          <div class="row between" style="margin-bottom:8px">
-            <div class="h3">Sub-Admin Directory</div>
-            <button class="primary-btn" id="addSubBtn" style="padding:6px 10px;font-size:12px">+ Add / Edit</button>
-          </div>
-          <div class="table-container">
-            <div id="subAdminTable" class="table"></div>
-          </div>
         </div>
       </div>
 
@@ -460,12 +458,6 @@ if ('serviceWorker' in navigator) {
             <circle cx="12" cy="7" r="4"/>
           </svg>
           <span>Users</span>
-        </button>
-        <button class="nav-tab" data-tab="subadmin">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          <span>SubAdmin</span>
         </button>
         <button class="nav-tab" data-tab="settings">
           <svg viewBox="0 0 24 24">
@@ -1010,7 +1002,8 @@ function renderUsers(){
       <div>Action</div>
     </div>
     ${items.map(p => {
-      const userFn2mId = escapeHtml(p.userId || p.id || '-');
+      const isSub = S.subProfiles.some(s => (s.email||'').toLowerCase() === (p.email||'').toLowerCase());
+      const userFn2mId = isSub ? escapeHtml((p.userId || p.id || '-').replace(/^FN2M-/i, 'SB-')) : escapeHtml(p.userId || p.id || '-');
       const uName = escapeHtml(p.username || 'User');
       const uEmail = escapeHtml(p.email || 'N/A');
       const uPhone = escapeHtml(p.phone || '-');
