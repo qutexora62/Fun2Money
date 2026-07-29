@@ -1202,7 +1202,7 @@ function renderSubAdmins(){
         <div style="font-family:monospace;color:#CBD5E1">${sPass}</div>
         <div style="font-weight:700">${fmtMoney(s.balance)}</div>
         <div><span class="badge ${s.status==='active'?'green':'red'}">${s.status||'active'}</span></div>
-        <div><button class="danger-btn" onclick="deleteSubAdmin('${escapeHtml(s.id)}', '${sEmail}')" style="padding:3px 8px;font-size:10px">Delete</button></div>
+        <div><button class="outline-btn" onclick="editSubAdmin('${escapeHtml(s.id)}')" style="padding:3px 8px;font-size:10px">Edit</button> <button class="danger-btn" onclick="deleteSubAdmin('${escapeHtml(s.id)}', '${sEmail}')" style="padding:3px 8px;font-size:10px">Delete</button></div>
       </div>
       `;
     }).join("")}
@@ -1210,7 +1210,8 @@ function renderSubAdmins(){
 }
 
 function buildSubEmailOptions(){
-  return S.profiles.map(p => {
+  const existingEmails = new Set((S.subProfiles||[]).map(s => (s.email||'').toLowerCase()));
+  return S.profiles.filter(p => !existingEmails.has((p.email||'').toLowerCase())).map(p => {
     const e = escapeHtml(p.email || '');
     const fid = escapeHtml(p.userId || p.id || '');
     const un = escapeHtml(p.username || '');
@@ -1224,7 +1225,7 @@ $("#addSubBtn").onclick = ()=>{
     <select id="sEmailSelect" onchange="document.getElementById('sFn2mId').value=this.options[this.selectedIndex]?.dataset.fn2m||''"><option value="">-- Choose user --</option>${buildSubEmailOptions()}</select>
     <label>FN2M ID</label><input id="sFn2mId" readonly placeholder="Auto-filled from selected user">
     <label>Access Key</label><input id="sKey" value="FN2M-CUTE${Math.random().toString(36).slice(2,6).toUpperCase()}">
-    <button class="primary-btn" id="saveSubSubmit" style="width:100%;margin-top:14px">Move to SubAdmin</button>
+    <button class="primary-btn" id="saveSubSubmit" style="width:100%;margin-top:14px">Add to SubAdmin</button>
   `);
   $("#saveSubSubmit").onclick = async ()=>{
     const sel = $("#sEmailSelect");
@@ -1244,30 +1245,33 @@ $("#addSubBtn").onclick = ()=>{
       status: "active",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
-    const userDoc = S.profiles.find(p => (p.email||'').toLowerCase() === email);
-    if(userDoc && userDoc.id){
-      await db.collection("profiles").doc(userDoc.id).delete();
-    }
     closeModal();
-    toast("User moved to SubAdmin");
+    toast("User added to SubAdmin");
   };
 };
 async function deleteSubAdmin(docId, email){
-  if(!confirm(`Restore ${email} to normal user?`)) return;
-  const snap = await db.collection("subProfiles").doc(docId).get();
-  if(!snap.exists) return toast("SubAdmin record not found", "warn");
-  const data = snap.data();
-  const originalFn2m = (data.sbId||'').replace(/^SB-/i, 'FN2M-');
-  const newId = originalFn2m || "FN2M-"+randId(6);
-  await db.collection("profiles").doc(newId).set({
-    userId: newId, username: data.username || email.split('@')[0],
-    email: data.email || email, password: data.password || '',
-    phone: data.phone || '', balance: Number(data.balance||0),
-    isBanned: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+  if(!confirm(`Remove ${email} from SubAdmin?`)) return;
   await db.collection("subProfiles").doc(docId).delete();
-  toast("SubAdmin restored to normal user");
+  toast("Removed from SubAdmin");
+}
+
+function editSubAdmin(docId){
+  const sub = S.subProfiles.find(s => s.id === docId);
+  if(!sub) return toast("SubAdmin not found", "warn");
+  showModal(`
+    <div class="row between" style="margin-bottom:12px"><div class="h2">Edit SubAdmin</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <label>Email</label><input value="${escapeHtml(sub.email)}" readonly style="opacity:.6">
+    <label>SB ID</label><input value="${escapeHtml(sub.sbId || '-')}" readonly style="opacity:.6">
+    <label>Access Key</label><input id="editKey" value="${escapeHtml(sub.accessKey || '')}">
+    <button class="primary-btn" id="saveEditSub" style="width:100%;margin-top:14px">Save Changes</button>
+  `);
+  $("#saveEditSub").onclick = async ()=>{
+    const newKey = $("#editKey").value.trim();
+    if(!newKey) return toast("Access key required", "warn");
+    await db.collection("subProfiles").doc(docId).set({ accessKey: newKey }, { merge: true });
+    closeModal();
+    toast("SubAdmin updated");
+  };
 }
 
 function renderGeneralSettings(){
