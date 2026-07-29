@@ -1178,16 +1178,19 @@ function renderSubAdmins(){
   if(!S.subProfiles.length){ list.innerHTML = `<div class="muted small" style="padding:10px">No sub-admins configured</div>`; return; }
   list.style.minWidth = "auto";
   list.innerHTML = `
-    <div class="table-row head" style="grid-template-columns:1fr auto auto;min-width:0">
+    <div class="table-row head" style="grid-template-columns:1fr 1fr auto auto;min-width:0">
       <div>FN2M ID</div>
+      <div>Access Key</div>
       <div>Edit</div>
       <div>Delete</div>
     </div>
     ${S.subProfiles.map(s => {
-    const sbId = escapeHtml(s.sbId || '-');
+    const origId = escapeHtml((s.sbId||'').replace(/^SB-/i, 'FN2M-'));
     const sEmail = escapeHtml(s.email || 'N/A');
-    return `<div class="table-row" style="grid-template-columns:1fr auto auto;min-width:0">
-      <div style="color:var(--blue);cursor:pointer;font-weight:700" onclick="copyToClipboard('${sbId}')" title="Tap to copy">${sbId}</div>
+    const aKey = escapeHtml(s.accessKey || '-');
+    return `<div class="table-row" style="grid-template-columns:1fr 1fr auto auto;min-width:0">
+      <div style="color:var(--blue);cursor:pointer;font-weight:700" onclick="copyToClipboard('${origId}')" title="Tap to copy">${origId}</div>
+      <div style="color:var(--cyan);cursor:pointer;font-weight:600" onclick="copyToClipboard('${aKey}')" title="Tap to copy">${aKey}</div>
       <div><button class="outline-btn" onclick="editSubAdmin('${escapeHtml(s.id)}')" style="padding:3px 8px;font-size:10px">Edit</button></div>
       <div><button class="danger-btn" onclick="deleteSubAdmin('${escapeHtml(s.id)}', '${sEmail}')" style="padding:3px 8px;font-size:10px">Delete</button></div>
     </div>`;
