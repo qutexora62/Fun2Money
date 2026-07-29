@@ -146,51 +146,19 @@ label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10p
   .table-row>*:nth-child(3),.table-row>*:nth-child(4){grid-column:1/-1}
 }
 </style>
-<!-- FULLSCREEN STANDALONE PWA MANIFEST FOR SUBADMIN -->
+<!-- PWA MANIFEST -->
 <script>
 const PWA_ICON_URL = "https://uploads.onecompiler.io/44jqs6n4d/1785233140328/67382.png";
-
-const manifestObj = {
-  "id": "/fun2money-subadmin-pro",
-  "name": "Fun2Money SubAdmin",
-  "short_name": "FN2M SubAdmin",
-  "start_url": "./",
-  "scope": "./",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone"],
-  "background_color": "#060B18",
-  "theme_color": "#060B18",
-  "orientation": "portrait",
-  "icons": [
-    { "src": PWA_ICON_URL, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": PWA_ICON_URL, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ]
-};
-
-const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
-const manifestURL = URL.createObjectURL(manifestBlob);
-const linkManifest = document.createElement('link');
-linkManifest.rel = 'manifest';
-linkManifest.href = manifestURL;
-document.head.appendChild(linkManifest);
-
-const linkIcon = document.createElement('link');
-linkIcon.rel = 'apple-touch-icon';
-linkIcon.href = PWA_ICON_URL;
-document.head.appendChild(linkIcon);
-
-if ('serviceWorker' in navigator) {
-  const swCode = `
-    self.addEventListener('install', (e) => self.skipWaiting());
-    self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-    self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
-}
+const manifestObj = {"id":"/fun2money-subadmin","name":"Fun2Money SubAdmin","short_name":"FN2M SubAdmin","start_url":"./","scope":"./","display":"fullscreen","display_override":["fullscreen","standalone"],"background_color":"#060B18","theme_color":"#060B18","orientation":"portrait","icons":[{"src":PWA_ICON_URL,"sizes":"192x192","type":"image/png","purpose":"any maskable"},{"src":PWA_ICON_URL,"sizes":"512x512","type":"image/png","purpose":"any maskable"}]};
+const mb=new Blob([JSON.stringify(manifestObj)],{type:'application/json'}),mu=URL.createObjectURL(mb);
+const lm=document.createElement('link');lm.rel='manifest';lm.href=mu;document.head.appendChild(lm);
+const li=document.createElement('link');li.rel='apple-touch-icon';li.href=PWA_ICON_URL;document.head.appendChild(li);
+if('serviceWorker'in navigator){const sw=`
+self.addEventListener('install',e=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response('Offline'))));
+`;const b=new Blob([sw],{type:'application/javascript'});navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{})}
 </script>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -207,7 +175,7 @@ const CONFIG = {
   storageBucket: "my-projects-96ad5.firebasestorage.app",
   messagingSenderId: "298309523988",
   appId: "1:298309523988:web:6446ce9bb094e0176f2501",
-  "measurementId": "G-5E8SWF9CPP",
+  measurementId: "G-5E8SWF9CPP",
   databaseURL: "https://my-projects-96ad5-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 firebase.initializeApp(CONFIG);
@@ -217,446 +185,291 @@ const rtdb = firebase.database();
 db.settings({ ignoreUndefinedProperties: true });
 
 const S = {
-  user: null,
-  profile: null,
-  role: "subadmin",
-  currentPage: "home",
-  currentTab: "home",
-  activeSection: "banners",
-  banners: [],
-  matches: [],
-  winners: [],
-  transactions: [],
-  profiles: [],
-  subProfiles: [],
-  settings: {},
-  paymentUrls: [],
-  socialLinks: [],
-  adminDoc: null,
-  joinedMatches: [],
-  notifications: [],
-  appUpdates: {},
-  currentMatch: null,
-  currentWinner: null,
-  selectedPaymentAmount: 0,
-  timer: null
+  user: null, profile: null, role: "user", subAdminUnlocked: false,
+  currentTab: "home", banners: [], matches: [], winners: [],
+  transactions: [], profiles: [], settings: {}, paymentUrls: [],
+  socialLinks: [], joinedMatches: []
 };
 
 const $ = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
-function toast(message, type="good"){
-  const box = document.createElement("div");
-  box.className = `toast ${type}`;
-  box.textContent = message;
-  $(".toast-stack").appendChild(box);
-  setTimeout(()=>{ box.style.opacity = "0"; box.style.transform = "translateY(6px)"; }, 2400);
-  setTimeout(()=> box.remove(), 3000);
+function toast(msg, type="good"){
+  const el = document.createElement("div");
+  el.className = `toast ${type}`; el.textContent = msg;
+  $(".toast-stack").appendChild(el);
+  setTimeout(()=>{ el.style.opacity = "0"; el.style.transform = "translateY(6px)"; }, 2400);
+  setTimeout(()=> el.remove(), 3000);
 }
-
-function fmtMoney(v){
-  const n = Number(v || 0);
-  return "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(Math.round(n));
+function fmtMoney(v){ const n = Number(v||0); return "₹"+new Intl.NumberFormat("en-IN",{maximumFractionDigits:0}).format(Math.round(n)); }
+function fmtNumber(v){ const n=Number(v||0); if(n>=1e9) return (n/1e9).toFixed(1).replace(/\.0$/,'')+'B'; if(n>=1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'')+'M'; if(n>=1e3) return (n/1e3).toFixed(1).replace(/\.0$/,'')+'K'; return String(Math.round(n)); }
+function randId(len=10){ const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let o=''; for(let i=0;i<len;i++) o+=c[Math.floor(Math.random()*c.length)]; return o; }
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function ts(v){ if(!v) return ''; if(v.toDate) return v.toDate().toLocaleString(); if(v.seconds) return new Date(v.seconds*1000).toLocaleString(); if(typeof v==='number') return new Date(v).toLocaleString(); return String(v); }
+function moneyNum(v){ return Math.max(0, Math.round(Number(v||0))); }
+function showModal(html, wide=false){
+  $(".modal").style.width = wide ? "min(96vw,760px)" : "min(92vw,420px)";
+  $(".modal").innerHTML = html;
+  $(".modal-backdrop").classList.remove("hidden");
 }
-function fmtNumber(v){
-  const n = Number(v || 0);
-  if (n >= 1e9) return (n/1e9).toFixed(1).replace(/\.0$/, "") + "B";
-  if (n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/, "") + "M";
-  if (n >= 1e3) return (n/1e3).toFixed(1).replace(/\.0$/, "") + "K";
-  return String(Math.round(n));
-}
-function randId(len=10){
-  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out="";
-  for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
-  return out;
-}
-function randomAccessKey(){
-  return "FN2M-CUTE" + Math.random().toString(36).slice(2,6).toUpperCase();
-}
-function escapeHtml(s=""){
-  return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-}
-function avatarLabel(text="U"){ return String(text).slice(0,1).toUpperCase(); }
-function shortUid(uid=""){
-  return uid ? uid.slice(0,6) + "…" + uid.slice(-4) : "";
-}
-function ts(v){
-  if(!v) return "";
-  if(v.toDate) return v.toDate().toLocaleString();
-  if(v.seconds) return new Date(v.seconds * 1000).toLocaleString();
-  if(typeof v === "number") return new Date(v).toLocaleString();
-  return String(v);
-}
-function copySilent(text){
-  navigator.clipboard?.writeText(String(text||"")).catch(()=>{});
-}
-function fileToDataURL(file){
-  return new Promise((resolve,reject)=>{
-    const fr = new FileReader();
-    fr.onload = ()=> resolve(fr.result);
-    fr.onerror = reject;
-    fr.readAsDataURL(file);
-  });
-}
-function showModal(contentHtml, wide=false){
-  const bd = $(".modal-backdrop");
-  const m = $(".modal");
-  m.style.width = wide ? "min(96vw, 760px)" : "min(92vw, 420px)";
-  m.innerHTML = contentHtml;
-  bd.classList.remove("hidden");
-}
-function closeModal(){
-  $(".modal-backdrop").classList.add("hidden");
-  $(".modal").innerHTML = "";
-}
-function openDrawer(){
-  $(".drawer-backdrop").classList.remove("hidden");
-  $(".drawer").classList.add("open");
-}
-function closeDrawer(){
-  $(".drawer-backdrop").classList.add("hidden");
-  $(".drawer").classList.remove("open");
-}
-function setTopTitle(title){ $(".topbar-title").textContent = title; }
+function closeModal(){ $(".modal-backdrop").classList.add("hidden"); $(".modal").innerHTML = ""; }
+function openDrawer(){ $(".drawer-backdrop").classList.remove("hidden"); $(".drawer").classList.add("open"); }
+function closeDrawer(){ $(".drawer-backdrop").classList.add("hidden"); $(".drawer").classList.remove("open"); }
 function navSet(page){
   S.currentTab = page;
-  $$("[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === page));
-  $$(".page").forEach(pg => pg.classList.remove("active"));
-  const node = document.getElementById(`page-${page}`);
-  if(node){ node.classList.add("active"); }
+  $$("[data-tab]").forEach(b => b.classList.toggle("active", b.dataset.tab === page));
+  $$(".page").forEach(p => p.classList.remove("active"));
+  const n = document.getElementById("page-"+page);
+  if(n) n.classList.add("active");
 }
-function subnavSet(section){
-  S.activeSection = section;
-  $$("[data-section]").forEach(btn => btn.classList.toggle("active", btn.dataset.section === section));
-  $$(".section-panel").forEach(p => p.classList.add("hidden"));
-  const node = document.getElementById(`panel-${section}`);
-  if(node) node.classList.remove("hidden");
+function presenceRef(email){ return rtdb.ref("presence/"+email.replace(/[.@]/g,'_')); }
+function randAccessKey(){ return "FN2M-CUTE"+Math.random().toString(36).slice(2,6).toUpperCase(); }
+function renderMatchForm(data={}, isEdit=false){
+  const modes=["CLASH SQUAD","BATTLE ROYALE","LONG WOLF"];
+  const maps=["BERMUDA","NEXTERRA","ALPINE","PURGATORY","KALAHARI","SOLARA"];
+  const mode=data.gameType||"CLASH SQUAD"; const teamsFunc=m=>{const t={};['CLASH SQUAD','BATTLE ROYALE'].forEach(g=>t[g]=['Solo','Duo','Trio','Squad']); t['LONG WOLF']=['Solo']; return t[m]||['Solo'];};
+  const teams=teamsFunc(mode);
+  return `
+    <div class="row between"><div class="h2">${isEdit?"Edit":"Create"} Tournament</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <label>Title</label><input id="mTitle" value="${escapeHtml(data.title||'')}" placeholder="Match Title">
+    <label>Banner Image URL</label><input id="mImage" value="${escapeHtml(data.image||'')}" placeholder="https://...">
+    <div class="grid grid-2">
+      <div><label>Entry Fee (₹)</label><input id="mEntry" type="number" value="${data.entryFee??0}"></div>
+      <div><label>Game Mode</label><select id="mGameMode">${modes.map(m=>`<option ${m===mode?'selected':''}>${m}</option>`).join('')}</select></div>
+    </div>
+    <div class="grid grid-2">
+      <div><label>Team Mode</label><select id="mTeamMode">${teams.map(t=>`<option ${t===data.teamMode?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div><label>Map Type</label><select id="mMapType">${maps.map(t=>`<option ${t===data.mapType?'selected':''}>${t}</option>`).join('')}</select></div>
+    </div>
+    <div class="grid grid-2">
+      <div><label>Per Kill Prize (₹)</label><input id="mPerKill" type="number" value="${data.perKillPrize??0}"></div>
+      <div><label>Win Prize (₹)</label><input id="mWinPrize" type="number" value="${data.winPrize??0}"></div>
+    </div>
+    <label>Start Date & Time</label><input id="mStart" type="datetime-local" value="${data.startTime?new Date(data.startTime.seconds?data.startTime.seconds*1000:data.startTime).toISOString().slice(0,16):''}">
+    <label>Rules</label><textarea id="mRule" placeholder="Enter tournament rules...">${escapeHtml(data.rule||'')}</textarea>
+    <label>Status</label><select id="mStatus">${["upcoming","live","coming-soon"].map(s=>`<option value="${s}" ${s===String(data.status||'upcoming')?'selected':''}>${s}</option>`).join('')}</select>
+    <div class="grid grid-2">
+      <div><label>Room ID</label><input id="mRoom" value="${escapeHtml(data.roomId||'')}"></div>
+      <div><label>Password</label><input id="mPass" value="${escapeHtml(data.password||'')}"></div>
+    </div>
+    <button class="primary-btn" style="width:100%;margin-top:14px" id="saveMatchBtn">${isEdit?"Update":"Create"} Tournament</button>`;
 }
-function presenceRef(email){ return rtdb.ref(`presence/${email.replace(/[.@]/g, '_')}`); }
-function rtdbNotifyRef(){ return rtdb.ref("notifications"); }
-
-async function setPresence(state){
-  if(!S.user) return;
-  await presenceRef(S.user.email).set({
-    state,
-    role: S.role,
-    email: S.user.email,
-    updatedAt: firebase.database.ServerValue.TIMESTAMP
-  }).catch(()=>{});
+// LOGIN SCREEN
+function loginShell(){
+  return `<div class="hero-login"><div class="hero-bg" style="background-image:url('https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg')"></div><div class="overlay-grad"></div><div class="login-card"><div class="login-banner" style="background-image:url('https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg')"><div class="caption"><div class="badge blue">Fun2Money</div><div class="h1" style="margin-top:8px">User Panel</div><div class="muted small" style="margin-top:6px">Login to play tournaments & earn</div></div></div><div style="padding-top:14px" id="loginFormSlot"></div><div id="loginError" class="hidden" style="margin-top:10px;color:#FB7185;font-size:13px"></div></div></div>`;
 }
-function wirePresence(){
-  if(!S.user) return;
-  const ref = presenceRef(S.user.email);
-  ref.onDisconnect().set({
-    state: "offline",
-    role: S.role,
-    email: S.user.email,
-    updatedAt: firebase.database.ServerValue.TIMESTAMP
-  });
-  setPresence("online");
-  window.addEventListener("beforeunload", ()=>{ try{ ref.set({state:"offline", role:S.role, email:S.user.email, updatedAt: firebase.database.ServerValue.TIMESTAMP}); }catch(e){} });
+function renderLoginForm(isSignup=false){
+  return `
+    <div class="switch-row" style="margin-bottom:14px">
+      <button class="${!isSignup?'active':''}" onclick="renderLoginForm(false)">Login</button>
+      <button class="${isSignup?'active':''}" onclick="renderLoginForm(true)">Sign Up</button>
+    </div>
+    <label>Email</label><input id="accEmail" type="email" placeholder="name@gmail.com">
+    <label>Password</label><input id="accPass" type="password" placeholder="Min 6 chars">
+    ${isSignup?'<label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input id="termsCheck" type="checkbox"> I accept <a href="#" onclick="alert(\'Terms: Fair play, no refund on ban\')" style="color:var(--blue)">Terms</a></label>':''}
+    <button class="primary-btn" style="width:100%;margin-top:14px" id="btnAuthSubmit">${isSignup?'Create Account':'Login'}</button>
+  `;
 }
-function listenNotifications(){
-  if(!S.user) return;
-  const ref = rtdbNotifyRef();
-  ref.off();
-  ref.limitToLast(30).on("value", snap => {
-    const val = snap.val() || {};
-    S.notifications = Object.entries(val).map(([id,v]) => ({id, ...v})).sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
-    renderNotifications();
-  });
+// APP SCREEN
+function buildAppUI(){
+  return `
+  <div class="shell">
+    <div class="topbar">
+      <div class="row"><div class="avatar">F</div><div class="h3">Fun2Money</div></div>
+      <div class="topbar-title">Dashboard</div>
+      <button class="icon-btn" id="openDrawerBtn">☰</button>
+    </div>
+    <div class="page active" id="page-home"><div class="section"><div class="grid grid-2" id="statsGrid"></div><div style="margin-top:14px"><div class="h3" style="margin-bottom:10px">Recent Activity</div><div id="recentActivityList"></div></div></div></div>
+    <div class="page" id="page-tournaments"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div class="h3">All Tournaments</div></div><div class="list" id="allMatchList" style="margin-top:12px"></div></div></div></div>
+    <div class="page" id="page-wallet"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div><div class="muted small">Balance</div><div class="h1" id="walletBalance">₹0</div></div></div><div class="hr"></div><div class="h3">Recent Transactions</div><div id="transactionList"></div></div></div></div>
+    <div class="page" id="page-profile"><div class="section"><div class="card" style="padding:14px;text-align:center"><div class="avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto" id="profileAvatar">U</div><div class="h3" style="margin-top:8px" id="profileName">User</div><div class="tiny muted" id="profileEmail"></div></div><div class="card soft" style="padding:14px;margin-top:12px"><div class="list" id="profileDetails"></div></div></div></div>
+    <div class="page" id="page-subadmin"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div class="h3">Sub Admin - Tournaments</div><button class="primary-btn" id="subAddTournament">Create</button></div><div class="list" id="subMatchList" style="margin-top:12px"></div></div></div></div>
+    <div class="navbar">
+      <div class="bottom-nav" id="bottomNav">
+        <button class="tab-btn active" data-tab="home"><span class="tab-icon">🏠</span>Home</button>
+        <button class="tab-btn" data-tab="tournaments"><span class="tab-icon">🏆</span>Matches</button>
+        <button class="tab-btn" data-tab="wallet"><span class="tab-icon">💳</span>Wallet</button>
+        <button class="tab-btn" data-tab="profile"><span class="tab-icon">👤</span>Profile</button>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-backdrop hidden"></div>
+  <div class="drawer">
+    <div class="drawer-header">
+      <div class="row"><div class="avatar" id="drawerAvatar">U</div><div><div class="h3" id="drawerName">User</div><div class="tiny muted" id="drawerEmail"></div></div></div>
+      <button class="icon-btn" id="closeDrawerBtn">✕</button>
+    </div>
+    <div class="drawer-menu">
+      <button class="ghost-btn" id="drawerAccessKey"><span style="font-size:18px">🔑</span> Access Key</button>
+      <button class="ghost-btn" id="drawerHelp"><span style="font-size:18px">💬</span> Help & Support</button>
+      <button class="danger-btn" id="drawerLogout"><span style="font-size:18px">🚪</span> Logout</button>
+    </div>
+  </div>
+  <div class="modal-backdrop hidden"></div><div class="modal"></div><div class="toast-stack"></div>`;
 }
-function pushNotification(title, message, targetUser="all"){
-  const n = {
-    title, message, targetUser, createdAt: Date.now()
-  };
-  rtdbNotifyRef().push(n);
-  return db.collection("notifications").add({
-    title, message, targetUser, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).catch(()=>{});
+// AUTH
+let isSignup = false;
+function renderLoginFormWrapper(signup){
+  isSignup = signup;
+  $("#loginFormSlot").innerHTML = renderLoginForm(signup);
+  $("#btnAuthSubmit").onclick = handleAuth;
 }
-function listenBaseCollections(){
-  db.collection("settings").doc("general").onSnapshot(snap => {
-    S.settings = snap.exists ? (snap.data() || {}) : {};
-    renderSettingsBits();
-  });
-  db.collection("banners").orderBy("position", "asc").onSnapshot(snap => {
-    S.banners = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderBanners();
-  });
-  db.collection("matches").orderBy("createdAt", "desc").onSnapshot(snap => {
-    S.matches = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderMatches();
-  });
-  db.collection("winners").orderBy("rank", "asc").onSnapshot(snap => {
-    S.winners = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderWinners();
-  });
-  db.collection("paymentUrls").orderBy("amount", "asc").onSnapshot(snap => {
-    S.paymentUrls = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderPaymentUrls();
-  });
-  db.collection("socialLinks").orderBy("createdAt", "asc").onSnapshot(snap => {
-    S.socialLinks = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderSocialLinks();
-  });
-}
-function listenAccountCollections(){
-  if(!S.user) return;
-  db.collection("profiles").where("email", "==", S.user.email).onSnapshot(snap => {
-    S.profile = snap.docs.length ? snap.docs[0].data() : null;
-    renderProfileBits();
-  });
-}
-function renderSettingsBits(){}
-function renderBanners(){}
-function renderMatches(){}
-function renderWinners(){}
-function renderPaymentUrls(){}
-function renderSocialLinks(){}
-function renderProfileBits(){}
-function renderNotifications(){}
-function renderRecentActivities(){}
-function renderStats(){}
-function ensureAuthGate(cb){
-  auth.onAuthStateChanged(async user => {
-    S.user = user || null;
-    if(user){
-      wirePresence();
-      listenNotifications();
-      listenAccountCollections();
-      cb && cb(user);
+function handleAuth(){
+  const email = $("#accEmail").value.trim().toLowerCase();
+  const pass = $("#accPass").value;
+  $("#loginError").classList.add("hidden");
+  if(!email.endsWith("@gmail.com")){ $("#loginError").textContent="Valid @gmail.com required"; $("#loginError").classList.remove("hidden"); return; }
+  if(pass.length < 6){ $("#loginError").textContent="Password min 6 chars"; $("#loginError").classList.remove("hidden"); return; }
+  const doAuth = async ()=>{
+    if(isSignup){
+      if(!$("#termsCheck").checked){ $("#loginError").textContent="Please accept terms"; $("#loginError").classList.remove("hidden"); return; }
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      const fn2mId = "FN2M-"+randId(6);
+      const bonus = Number(S.settings.signupBonus || 0);
+      await db.collection("profiles").doc(fn2mId).set({
+        balance: bonus, isBanned: false, userId: fn2mId,
+        username: email.split('@')[0], email: email, password: pass,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      toast("Account created!");
     } else {
-      S.profile = null;
-      $(".screen-login").classList.remove("hidden");
-      $(".screen-app").classList.add("hidden");
-      setPresence("offline").catch(()=>{});
-      cb && cb(null);
+      await auth.signInWithEmailAndPassword(email, pass);
     }
+  };
+  doAuth().catch(err => {
+    $("#loginError").textContent = err.message || "Auth failed";
+    $("#loginError").classList.remove("hidden");
   });
 }
-
-function authError(msg){
-  const el = $("#loginError");
-  if(el){ el.textContent = msg; el.classList.remove("hidden"); }
-}
-function clearAuthError(){
-  const el = $("#loginError");
-  if(el){ el.textContent = ""; el.classList.add("hidden"); }
-}
-function copyVal(v){ navigator.clipboard?.writeText(String(v||"")).catch(()=>{}); }
-function safeInt(v, fallback=0){ const n = parseInt(v,10); return Number.isFinite(n) ? n : fallback; }
-function safeFloat(v, fallback=0){ const n = parseFloat(v); return Number.isFinite(n) ? n : fallback; }
-function moneyNum(v){ return Math.max(0, Math.round(Number(v||0))); }
-
-function loginShell(bg, title, subtitle){
-  return `
-  <div class="hero-login">
-    <div class="hero-bg" style="background-image:url('${bg}')"></div>
-    <div class="overlay-grad"></div>
-    <div class="login-card">
-      <div class="login-banner" style="background-image:url('${bg}')">
-        <div class="caption">
-          <div class="badge blue">Fun2Money</div>
-          <div class="h1" style="margin-top:8px">${title}</div>
-          <div class="muted small" style="margin-top:6px">${subtitle}</div>
-        </div>
-      </div>
-      <div style="padding-top:14px" id="loginFormSlot"></div>
-      <div id="loginError" class="hidden" style="margin-top:10px;color:#FB7185;font-size:13px"></div>
-    </div>
-  </div>`;
-}
-</script>
-<script>
-function subLoginForm(){
-  return `
-    <label>Email</label><input id="email" type="email" placeholder="name@gmail.com">
-    <label>Access Key</label><input id="accessKey" placeholder="FN2M-CUTEXXXX">
-    <button class="primary-btn" style="width:100%;margin-top:14px" id="loginBtn">Login</button>
-    <div class="tiny muted" style="margin-top:12px">Gmail only. Access key regex: <code>^FN2M-CUTE[A-Z0-9]{4}$</code></div>
-  `;
-}
-function ensureSubUI(){
-  $(".screen-login").innerHTML = loginShell("https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg", "Sub-Admin Panel", "Gmail + access key login, live tournaments aur wallet controls.");
-  $("#loginFormSlot").innerHTML = subLoginForm();
-  $("#loginBtn").onclick = subLogin;
-  $(".screen-app").innerHTML = `
-    <div class="shell">
-      <div class="topbar">
-        <div class="row">
-          <div class="avatar">F</div>
-          <div class="h3">Fun2Money</div>
-        </div>
-        <div class="topbar-title">Sub-Admin</div>
-        <div class="badge blue" id="subBal">₹0</div>
-      </div>
-      <div class="page active" id="page-home">
-        <div class="section">
-          <div class="grid grid-2" id="subStats"></div>
-        </div>
-      </div>
-      <div class="page" id="page-tournaments">
-        <div class="section">
-          <div class="card" style="padding:14px">
-            <div class="row between"><div class="h3">Tournaments</div><button class="primary-btn" id="subAddTournament">Create</button></div>
-            <div class="list" id="subMatchList" style="margin-top:12px"></div>
-          </div>
-        </div>
-      </div>
-      <div class="page" id="page-wallet">
-        <div class="section">
-          <div class="card" style="padding:14px">
-            <div class="row between"><div><div class="muted small">Available Balance</div><div class="h1" id="subWalletBalance">₹0</div></div><button class="outline-btn" id="subWithdrawBtn">Withdraw</button></div>
-            <div class="hr"></div>
-            <div class="h3">Profile</div>
-            <div id="subProfileBox"></div>
-          </div>
-        </div>
-      </div>
-      <div class="navbar">
-        <div class="bottom-nav">
-          <button class="tab-btn active" data-tab="home"><span class="tab-icon">🏠</span>Home</button>
-          <button class="tab-btn" data-tab="tournaments"><span class="tab-icon">🏆</span>Tournaments</button>
-          <button class="tab-btn" data-tab="wallet"><span class="tab-icon">💳</span>Wallet</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="drawer-backdrop hidden"></div>
-    <div class="drawer">
-      <div class="drawer-header">
-        <div class="row">
-          <div class="avatar">S</div>
-          <div>
-            <div class="h3" id="subName">Sub-Admin</div>
-            <div class="tiny muted" id="subEmailText"></div>
-          </div>
-        </div>
-        <button class="icon-btn" id="closeDrawerBtn">✕</button>
-      </div>
-      <div class="drawer-menu">
-        <button class="ghost-btn" id="editSubProfileBtn"><span style="font-size:18px">✏️</span> Edit Profile</button>
-        <button class="ghost-btn" id="helpSubBtn"><span style="font-size:18px">💬</span> Help & Support</button>
-        <button class="danger-btn" id="logoutBtn"><span style="font-size:18px">🚪</span> Logout</button>
-      </div>
-    </div>
-
-    <div class="modal-backdrop hidden"></div>
-    <div class="modal"></div>
-    <div class="toast-stack"></div>
-  `;
-  wireSubUI();
-}
-function wireSubUI(){
-  $("#openDrawerBtn") && ($("#openDrawerBtn").onclick = openDrawer);
-  $("#closeDrawerBtn").onclick = closeDrawer;
-  $(".drawer-backdrop").onclick = closeDrawer;
-  $(".modal-backdrop").onclick = closeModal;
-  $("#logoutBtn").onclick = ()=> auth.signOut();
-  $("#helpSubBtn").onclick = ()=> window.open("https://chat.whatsapp.com/KiRYSqnMHbhLhpx4OC1IDD", "_blank");
-  $("#editSubProfileBtn").onclick = openSubProfileModal;
-  $$("[data-tab]").forEach(btn => btn.onclick = ()=> navSet(btn.dataset.tab));
-  $("#subAddTournament").onclick = ()=> openSubTournamentModal();
-  $("#subWithdrawBtn").onclick = openSubWithdrawModal;
-}
-async function subLogin(){
-  clearAuthError();
-  const email = $("#email").value.trim().toLowerCase();
-  const accessKey = $("#accessKey").value.trim();
-  if(!/@gmail\.com$/.test(email)) return authError("Gmail only.");
-  if(!/^FN2M-CUTE[A-Z0-9]{4}$/.test(accessKey)) return authError("Invalid access key format.");
-  try{
-    const userCred = await auth.signInWithEmailAndPassword(email, accessKey);
-    // In practice, use real email/password. For single-file simplicity, key is also auth password fallback.
-    return userCred;
-  }catch(err){
-    // fallback check against subProfiles/accessKey
-    const doc = await db.collection("subProfiles").doc(email).get();
-    if(!doc.exists) return authError("Sub-admin profile not found.");
-    const data = doc.data() || {};
-    if(data.status === "deactive") return authError("Account deactivated.");
-    if(String(data.accessKey || "").trim() !== accessKey) return authError("Wrong access key.");
-    try{
-      const cred = await auth.signInWithEmailAndPassword(email, accessKey);
-      await postSubLogin(cred.user, data);
-    }catch(e2){
-      // Last resort: allow profile-based session state after password-style key
-      S.user = { uid: email, email };
-      await postSubLogin({ uid: email, email }, data, true);
-    }
-  }
-}
-async function postSubLogin(user, data, pseudo=false){
-  $(".screen-login").classList.add("hidden");
-  $(".screen-app").classList.remove("hidden");
-  await db.collection("subWallets").doc(user.email).set({ balance: Number(data.balance || 0) }, { merge:true });
-  listenSubCollections(user.email);
-  renderSubAll();
-  if(pseudo) toast("Logged in using access key", "warn");
-}
-function listenSubCollections(email){
+// MAIN LISTENERS
+function listenBaseCollections(){
+  db.collection("settings").doc("general").onSnapshot(snap => { S.settings = snap.exists ? snap.data() : {}; });
   db.collection("matches").orderBy("createdAt", "desc").onSnapshot(snap => {
     S.matches = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderSubMatches();
-    renderSubStats();
+    renderMatches(); renderSubAdminMatches();
   });
   db.collection("transactions").orderBy("createdAt", "desc").limit(40).onSnapshot(snap => {
     S.transactions = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderSubStats();
-  });
-  db.collection("subProfiles").doc(email).onSnapshot(snap => {
-    S.profile = snap.exists ? snap.data() : {};
-    renderSubProfileBits();
-  });
-  db.collection("subWallets").doc(email).onSnapshot(snap => {
-    const bal = snap.exists ? Number((snap.data() || {}).balance || 0) : 0;
-    $("#subBal").textContent = fmtMoney(bal);
-    $("#subWalletBalance") && ($("#subWalletBalance").textContent = fmtMoney(bal));
+    renderTransactions(); renderStats();
   });
 }
-function renderSubAll(){
-  renderSubStats();
-  renderSubMatches();
-  renderSubProfileBits();
+function listenAccount(email){
+  db.collection("profiles").where("email", "==", email).onSnapshot(snap => {
+    if(snap.docs.length){
+      S.profile = {id: snap.docs[0].id, ...snap.docs[0].data()};
+      renderProfileBits();
+    }
+  });
 }
-function renderSubStats(){
-  const totalPlayers = S.settings.basePlayerCount || S.transactions.filter(t=>t.userId).length || 0;
-  const myBalance = Number((S.profile || {}).balance || 0);
-  const activeTournaments = S.matches.filter(m => String(m.status||"") === "live").length;
-  const totalEarned = S.transactions.filter(t => t.email === (S.user && S.user.email) && t.status === "success").reduce((a,b)=>a + Number(b.amount || 0), 0);
-  $("#subStats").innerHTML = `
-    <div class="stat"><div class="muted small">Total Players</div><div class="value">${fmtNumber(totalPlayers)}</div></div>
-    <div class="stat"><div class="muted small">My Balance</div><div class="value">${fmtMoney(myBalance)}</div></div>
-    <div class="stat"><div class="muted small">Active Tournaments</div><div class="value">${fmtNumber(activeTournaments)}</div></div>
-    <div class="stat"><div class="muted small">Total Earned</div><div class="value">${fmtMoney(totalEarned)}</div></div>
-  `;
+// RENDER FUNCTIONS
+function renderStats(){
+  const p = S.profile || {};
+  const bal = Number(p.balance || 0);
+  $("#statsGrid").innerHTML = `
+    <div class="stat"><div class="muted small">Balance</div><div class="value">${fmtMoney(bal)}</div></div>
+    <div class="stat"><div class="muted small">Tournaments</div><div class="value">${S.matches.length}</div></div>`;
+  $("#walletBalance").textContent = fmtMoney(bal);
+  // Recent activity
+  const recent = S.transactions.slice(0,5);
+  $("#recentActivityList").innerHTML = recent.length ? recent.map(t => `
+    <div class="item row between">
+      <div><div class="small" style="text-transform:capitalize">${escapeHtml(t.type||'trx')}</div><div class="tiny muted">${ts(t.createdAt)}</div></div>
+      <div><b>${fmtMoney(t.amount)}</b> <span class="badge ${t.status==='success'?'green':t.status==='rejected'?'red':'gray'}">${t.status||'pending'}</span></div>
+    </div>`).join("") : '<div class="muted small">No activity</div>';
 }
-function renderSubMatches(){
+function renderMatches(){
+  const list = $("#allMatchList");
+  if(!list) return;
+  list.innerHTML = S.matches.length ? S.matches.map(m => `
+    <div class="item row between">
+      <div><div class="h3">${escapeHtml(m.title||'')}</div><div class="tiny muted">${escapeHtml(m.gameType||'')} · ₹${m.entryFee||0}</div></div>
+      <span class="badge ${m.status==='live'?'green':m.status==='upcoming'?'blue':'gray'}">${m.status||'upcoming'}</span>
+    </div>`).join("") : '<div class="muted small">No tournaments</div>';
+}
+function renderTransactions(){
+  const list = $("#transactionList");
+  if(!list) return;
+  list.innerHTML = S.transactions.length ? S.transactions.map(t => `
+    <div class="item row between">
+      <div><div class="small" style="text-transform:capitalize">${escapeHtml(t.type||'trx')}</div><div class="tiny muted">${ts(t.createdAt)}</div></div>
+      <div><b>${fmtMoney(t.amount)}</b></div>
+    </div>`).join("") : '<div class="muted small">No transactions</div>';
+}
+function renderProfileBits(){
+  const p = S.profile || {};
+  const name = p.username || p.email || 'User';
+  $("#profileAvatar").textContent = String(name)[0].toUpperCase();
+  $("#profileName").textContent = name;
+  $("#profileEmail").textContent = p.email || '';
+  $("#drawerAvatar").textContent = String(name)[0].toUpperCase();
+  $("#drawerName").textContent = name;
+  $("#drawerEmail").textContent = p.email || '';
+  $("#profileDetails").innerHTML = `
+    <div class="item row between"><div>FN2M ID</div><b>${escapeHtml(p.userId||p.id||'-')}</b></div>
+    <div class="item row between"><div>Email</div><b>${escapeHtml(p.email||'-')}</b></div>
+    <div class="item row between"><div>Balance</div><b>${fmtMoney(p.balance||0)}</b></div>
+    <div class="item row between"><div>Phone</div><b>${escapeHtml(p.phone||'-')}</b></div>`;
+}
+// SUB ADMIN (ACCESS KEY UNLOCK)
+function showAccessKeyModal(){
+  showModal(`
+    <div class="row between"><div class="h2">Access Key</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <p class="small muted" style="margin:10px 0">Enter Sub-Admin access key to unlock tournament management tools.</p>
+    <label>Access Key</label><input id="accessKeyInput" placeholder="FN2M-CUTEXXXX">
+    <div class="row" style="margin-top:12px">
+      <button class="outline-btn" id="getKeyBtn" style="flex:1;text-align:center">Get Key</button>
+      <button class="primary-btn" id="submitAccessKey" style="flex:2;text-align:center">Unlock</button>
+    </div>
+  `);
+  $("#getKeyBtn").onclick = ()=>{
+    toast("Contact admin to get your access key","warn");
+  };
+  $("#submitAccessKey").onclick = async ()=>{
+    const key = $("#accessKeyInput").value.trim();
+    if(!/^FN2M-CUTE[A-Z0-9]{4}$/.test(key)) return toast("Invalid key format (FN2M-CUTEXXXX)","warn");
+    // Validate against subProfiles collection
+    const snap = await db.collection("subProfiles").where("accessKey","==",key).where("status","==","active").get();
+    if(snap.empty) return toast("Invalid or inactive access key","bad");
+    closeModal();
+    S.subAdminUnlocked = true;
+    // Show subadmin tab
+    const nav = $("#bottomNav");
+    if(!$("#tab-subadmin")){
+      const btn = document.createElement("button");
+      btn.className = "tab-btn"; btn.dataset.tab = "subadmin"; btn.id = "tab-subadmin";
+      btn.innerHTML = '<span class="tab-icon">⚙️</span>Sub Admin';
+      btn.onclick = ()=> navSet("subadmin");
+      nav.appendChild(btn);
+    }
+    navSet("subadmin");
+    toast("Sub Admin tools unlocked!","good");
+  };
+}
+function renderSubAdminMatches(){
   const list = $("#subMatchList");
   if(!list) return;
-  list.innerHTML = S.matches.map(m => `
+  list.innerHTML = S.matches.length ? S.matches.map(m => `
     <div class="item">
       <div class="row between">
-        <div><div class="h3">${escapeHtml(m.title || "")}</div><div class="tiny muted">${escapeHtml(m.gameType || '')} · ${escapeHtml(m.status || '')}</div></div>
-        <div class="badge gray">${fmtMoney(m.entryFee || 0)}</div>
+        <div><div class="h3">${escapeHtml(m.title||"")}</div><div class="tiny muted">${escapeHtml(m.gameType||'')} · ${escapeHtml(m.status||'')}</div></div>
+        <div class="badge gray">${fmtMoney(m.entryFee||0)}</div>
       </div>
-      <div class="row" style="margin-top:10px"><button class="outline-btn" data-edit-sub-match="${m.id}">Edit</button><button class="danger-btn" data-del-sub-match="${m.id}">Delete</button></div>
-    </div>
-  `).join("");
-  $$("[data-edit-sub-match]").forEach(btn => btn.onclick = ()=> openSubTournamentModal(S.matches.find(x=>x.id===btn.dataset.editSubMatch), btn.dataset.editSubMatch));
-  $$("[data-del-sub-match]").forEach(btn => btn.onclick = ()=> db.collection("matches").doc(btn.dataset.delSubMatch).delete().then(()=>toast("Deleted")));
+      <div class="row" style="margin-top:10px">
+        <button class="outline-btn" data-edit-sub="${m.id}">Edit</button>
+        <button class="danger-btn" data-del-sub="${m.id}">Delete</button>
+      </div>
+    </div>`).join("") : '<div class="muted small">No tournaments</div>';
+  $$("[data-edit-sub]").forEach(b => b.onclick = ()=> openSubTournamentModal(S.matches.find(x=>x.id===b.dataset.editSub), b.dataset.editSub));
+  $$("[data-del-sub]").forEach(b => b.onclick = ()=> { if(confirm("Delete this tournament?")) db.collection("matches").doc(b.dataset.delSub).delete().then(()=>toast("Deleted")); });
 }
 function openSubTournamentModal(data={}, id=null){
-  showModal(`
-    <div class="row between"><div class="h2">${id ? "Edit" : "Create"} Tournament</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
-    ${renderMatchForm(data, !!id)}
-    <div class="tiny muted" style="margin-top:10px">Room update rewards ₹0.10 to your sub-wallet.</div>
-  `, true);
-  const oldOnclick = $("#saveMatchBtn").onclick;
+  showModal(renderMatchForm(data, !!id), true);
+  const gm = $("#mGameMode");
+  if(gm) gm.onchange = ()=>{
+    const teamsList = {'CLASH SQUAD':['Solo','Duo','Trio','Squad'],'BATTLE ROYALE':['Solo','Duo','Trio','Squad'],'LONG WOLF':['Solo']};
+    $("#mTeamMode").innerHTML = (teamsList[gm.value]||['Solo']).map(v=>`<option>${v}</option>`).join("");
+  };
   $("#saveMatchBtn").onclick = async ()=>{
-    const beforeRoom = data.roomId || "";
     const payload = {
       title: $("#mTitle").value.trim(),
       image: $("#mImage").value.trim(),
@@ -673,110 +486,46 @@ function openSubTournamentModal(data={}, id=null){
       password: $("#mPass").value.trim(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-    if(id){
-      await db.collection("matches").doc(id).set(payload, { merge:true });
-      if((payload.roomId !== beforeRoom || payload.password !== (data.password || "")) && S.user && S.user.email){
-        await db.collection("subWallets").doc(S.user.email).set({ balance: firebase.firestore.FieldValue.increment(0.10) }, { merge:true });
-        await db.collection("subProfiles").doc(S.user.email).set({ balance: firebase.firestore.FieldValue.increment(0.10) }, { merge:true });
-      }
-    } else {
-      await db.collection("matches").add(payload);
-    }
+    if(!payload.title) return toast("Title required","warn");
+    if(id){ await db.collection("matches").doc(id).set(payload,{merge:true}); toast("Updated"); }
+    else { await db.collection("matches").add(payload); toast("Created"); }
     closeModal();
-    toast("Saved");
   };
 }
-function openSubWithdrawModal(){
-  showModal(`
-    <div class="row between"><div class="h2">Withdraw</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
-    <label>UPI ID</label><input id="sUpi" placeholder="name@upi">
-    <label>Amount (₹45 - ₹250)</label><input id="sAmt" type="number" min="45" max="250">
-    <button class="primary-btn" id="submitSubWithdraw" style="width:100%;margin-top:12px">Submit</button>
-  `);
-  $("#submitSubWithdraw").onclick = async ()=>{
-    const upi = $("#sUpi").value.trim();
-    const amt = moneyNum($("#sAmt").value);
-    if(!upi || amt < 45 || amt > 250) return toast("Amount must be ₹45-₹250", "warn");
-    await db.collection("transactions").add({
-      userId: S.user.email, email: S.user.email, type:"sub_withdraw", amount: amt, status:"pending", method:"UPI", details:`Sub withdraw to ${upi}`, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    closeModal();
-    toast("Withdraw request sent");
-  };
+// WIRE UI
+function wireAppUI(){
+  $("#openDrawerBtn").onclick = openDrawer;
+  $("#closeDrawerBtn").onclick = closeDrawer;
+  $(".drawer-backdrop").onclick = closeDrawer;
+  $(".modal-backdrop").onclick = closeModal;
+  $("#drawerLogout").onclick = ()=>{ auth.signOut(); S.subAdminUnlocked = false; };
+  $("#drawerHelp").onclick = ()=> window.open("https://chat.whatsapp.com/KiRYSqnMHbhLhpx4OC1IDD", "_blank");
+  $("#drawerAccessKey").onclick = showAccessKeyModal;
+  $$("[data-tab]").forEach(b => b.onclick = ()=> navSet(b.dataset.tab));
+  $("#subAddTournament").onclick = ()=> openSubTournamentModal();
 }
-function openSubProfileModal(){
-  const p = S.profile || {};
-  showModal(`
-    <div class="row between"><div class="h2">Profile</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
-    <label>Full Name</label><input id="spName" value="${escapeHtml(p.name || '')}">
-    <label>Contact</label><input id="spContact" value="${escapeHtml(p.contact || '')}">
-    <label>Gender</label><input id="spGender" value="${escapeHtml(p.gender || '')}">
-    <label>Age</label><input id="spAge" type="number" value="${p.age ?? 18}">
-    <label>Device</label><input id="spDevice" value="${escapeHtml(p.device || '')}">
-    <button class="primary-btn" id="saveSubProfileBtn" style="width:100%;margin-top:12px">Save</button>
-  `);
-  $("#saveSubProfileBtn").onclick = async ()=>{
-    await db.collection("subProfiles").doc(S.user.email).set({
-      email:S.user.email,
-      name: $("#spName").value.trim(),
-      contact: $("#spContact").value.trim(),
-      gender: $("#spGender").value.trim(),
-      age: moneyNum($("#spAge").value),
-      device: $("#spDevice").value.trim(),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge:true });
-    closeModal();
-    toast("Profile saved");
-  };
-}
-function renderSubProfileBits(){
-  const p = S.profile || {};
-  $("#subName").textContent = p.name || (S.user && S.user.email) || "Sub-Admin";
-  $("#subEmailText").textContent = S.user && S.user.email || "";
-  $("#subProfileBox").innerHTML = `
-    <div class="item">
-      <div class="row between"><div>Email</div><div>${escapeHtml(S.user && S.user.email || "")}</div></div>
-      <div class="row between"><div>Status</div><div class="badge ${p.status === 'deactive' ? 'red' : 'green'}">${escapeHtml(p.status || 'active')}</div></div>
-      <div class="row between"><div>Access Key</div><div>${escapeHtml(p.accessKey || '')}</div></div>
-    </div>
-  `;
-}
-function setupSubFlow(){
-  ensureSubUI();
-  auth.onAuthStateChanged(async user => {
-    if(!user) return;
-    S.user = user;
-    const doc = await db.collection("subProfiles").doc(user.email).get();
-    if(doc.exists){
-      const data = doc.data() || {};
-      if(data.status === "deactive"){ auth.signOut(); authError("Account deactivated"); return; }
+// BOOT
+function boot(){
+  $(".screen-login").innerHTML = loginShell();
+  renderLoginFormWrapper(false);
+  $(".screen-app").innerHTML = buildAppUI();
+  wireAppUI();
+  listenBaseCollections();
+  auth.onAuthStateChanged(user => {
+    if(user){
+      S.user = user;
       $(".screen-login").classList.add("hidden");
       $(".screen-app").classList.remove("hidden");
-      await db.collection("subWallets").doc(user.email).set({ balance: Number(data.balance || 0) }, { merge:true });
-      listenSubCollections(user.email);
-      renderSubAll();
+      listenAccount(user.email);
+      renderStats();
     } else {
-      authError("No sub-profile found");
+      S.user = null; S.profile = null;
+      $(".screen-login").classList.remove("hidden");
+      $(".screen-app").classList.add("hidden");
     }
   });
-  ensureAuthGate(()=>{});
 }
-</script>
-<script>
-{
-  // shared boot
-  const loginBg = "https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg";
-  S.loginBg = loginBg;
-  
-}
-</script>
-<script>
-(async function(){
-  setupSubFlow();
-  $(".screen-login").innerHTML = loginShell("https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg", "Sub-Admin Panel", "Gmail + access key login, live tournaments aur wallet controls.");
-  $("#loginFormSlot").innerHTML = subLoginForm();
-  $("#loginBtn").onclick = subLogin;
-})();
+boot();
 </script>
 </body>
 </html>
