@@ -391,6 +391,14 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
 
+      <!-- PAGE: CREATE (TOURNAMENT) -->
+      <div class="page-view hidden" id="page-create">
+        <div class="card">
+          <div class="h3" style="margin-bottom:10px">Create Tournament</div>
+          <div id="createMatchFormContainer"></div>
+        </div>
+      </div>
+
       <!-- PAGE: WALLET -->
       <div class="page-view hidden" id="page-wallet">
         <div class="card">
@@ -465,6 +473,7 @@ if ('serviceWorker' in navigator) {
     </div>
     <div class="grid">
       <button class="ghost-btn" id="btnEditProfile" style="justify-content:flex-start">🔏  Update Profile Details</button>
+      <button class="ghost-btn hidden" id="sbAccessKeyBtn" style="justify-content:flex-start">🔑  SB Access Key</button>
       <button class="ghost-btn" id="btnHelpDesk" style="justify-content:flex-start">🆘️ Support & Feedback</button>
       <button class="danger-btn" id="btnLogout" style="width:100%;margin-top:10px">🚯 Sign Out</button>
     </div>
@@ -513,7 +522,9 @@ const S = {
   paymentUrls: [],
   settings: {},
   selectedPayAmount: 0,
-  termsAgreed: false
+  termsAgreed: false,
+  subDoc: null,
+  accessKeyEntered: false
 };
 
 const $ = sel => document.querySelector(sel);
@@ -532,6 +543,12 @@ function fmtMoney(v){ return "₹" + Math.round(Number(v||0)).toLocaleString('en
 function moneyNum(v){ const n = parseFloat(v); return isNaN(n) ? 0 : Math.max(0, Math.round(n)); }
 function escapeHtml(s=""){ return String(s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 function randId(len=8){ return Math.random().toString(36).slice(2, 2+len).toUpperCase(); }
+
+function matchGameModeOptions(mode){
+  if(mode === "BATTLE ROYALE") return ["SOLO","DUO","SQUAD"];
+  if(mode === "LONG WOLF") return ["SOLO","DUO"];
+  return ["SOLO","DUO","SQUAD","5V5","6V6"];
+}
 
 function ts(v){
   if(!v) return "";
@@ -765,8 +782,17 @@ function initUserListeners(){
   activeListeners.forEach(unsub => { try{ unsub(); }catch(e){} });
   activeListeners = [];
 
-  const unsubProfile = db.collection("profiles").where("email", "==", S.user.email).onSnapshot(snap => {
+  const unsubProfile = db.collection("profiles").where("email", "==", S.user.email).onSnapshot(async snap => {
     if(!snap.docs.length){
+      const subSnap = await db.collection("subProfiles").doc(S.user.email).get();
+      if(subSnap.exists){
+        S.subDoc = {id: subSnap.id, ...subSnap.data()};
+        updateSubAdminUI();
+        S.profile = null;
+        renderProfileState();
+        renderWinners();
+        return;
+      }
       toast("Account deleted by admin. Logging out...", "bad");
       setTimeout(() => handleSignOut(), 1500);
       return;
@@ -801,6 +827,11 @@ function initUserListeners(){
     S.winners = snap.docs.map(d=>({id:d.id, ...d.data()}));
     renderWinners();
   }); activeListeners.push(unsubWinners);
+
+  const unsubSub = db.collection("subProfiles").doc(S.user.email).onSnapshot(doc => {
+    S.subDoc = doc.exists ? {id: doc.id, ...doc.data()} : null;
+    updateSubAdminUI();
+  }); activeListeners.push(unsubSub);
 
   const unsubTxns = db.collection("transactions").where("userId", "==", S.user.email).onSnapshot(snap => {
     S.transactions = snap.docs.map(d=>({id:d.id, ...d.data()}));
@@ -1094,6 +1125,126 @@ function renderHistory(){
     </div>
   `).join("");
 }
+
+function updateSubAdminUI(){
+  if(S.subDoc){
+    const btn = $("#sbAccessKeyBtn");
+    if(btn) btn.classList.remove("hidden");
+    if(S.accessKeyEntered) showCreateTab();
+  } else {
+    const btn = $("#sbAccessKeyBtn");
+    if(btn) btn.classList.add("hidden");
+    hideCreateTab();
+    S.accessKeyEntered = false;
+  }
+}
+
+function showCreateTab(){
+  if(document.getElementById("createNavTab")) return;
+  const grid = document.querySelector(".bottom-nav-grid");
+  grid.style.gridTemplateColumns = "repeat(5,1fr)";
+  const refBtn = grid.querySelector('[data-tab="winners"]');
+  const btn = document.createElement("button");
+  btn.className = "nav-tab";
+  btn.id = "createNavTab";
+  btn.dataset.tab = "create";
+  btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>Create</span>`;
+  btn.onclick = ()=> switchTab("create");
+  grid.insertBefore(btn, refBtn);
+  renderCreateForm();
+}
+
+function hideCreateTab(){
+  const tab = document.getElementById("createNavTab");
+  if(tab) tab.remove();
+  const grid = document.querySelector(".bottom-nav-grid");
+  grid.style.gridTemplateColumns = "repeat(4,1fr)";
+  const cp = document.getElementById("page-create");
+  if(cp && !cp.classList.contains("hidden")) switchTab("home");
+}
+
+function renderCreateForm(){
+  const modes = ["CLASH SQUAD","BATTLE ROYALE","LONG WOLF"];
+  const maps = ["BERMUDA","NEXTERRA","ALPINE","PURGATORY","KALAHARI","SOLARA"];
+  $("#createMatchFormContainer").innerHTML = `
+    <label>Title</label><input id="mTitle" placeholder="Match Title">
+    <label>Banner Image URL</label><input id="mImage" placeholder="https://...">
+    <div class="grid grid-2">
+      <div><label>Entry Fee (₹)</label><input id="mEntry" type="number" value="0"></div>
+      <div><label>Game Mode</label><select id="mGameMode">${modes.map(m=>'<option>'+m+'</option>').join('')}</select></div>
+    </div>
+    <div class="grid grid-2">
+      <div><label>Team Mode</label><select id="mTeamMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></div>
+      <div><label>Map Type</label><select id="mMapType">${maps.map(t=>'<option>'+t+'</option>').join('')}</select></div>
+    </div>
+    <div class="grid grid-2">
+      <div><label>Per Kill Prize (₹)</label><input id="mPerKill" type="number" value="0"></div>
+      <div><label>Win Prize (₹)</label><input id="mWinPrize" type="number" value="0"></div>
+    </div>
+    <label>Start Date & Time</label><input id="mStart" type="datetime-local">
+    <label>Rules</label><textarea id="mRule" placeholder="Enter tournament rules..."></textarea>
+    <label>Status</label>
+    <select id="mStatus">
+      <option value="upcoming">upcoming</option>
+      <option value="live">live</option>
+      <option value="coming-soon">coming-soon</option>
+    </select>
+    <div class="grid grid-2">
+      <div><label>Room ID</label><input id="mRoom"></div>
+      <div><label>Password</label><input id="mPass"></div>
+    </div>
+    <button class="primary-btn" style="width:100%;margin-top:14px" id="saveCreateMatchBtn">Create Tournament</button>
+  `;
+  $("#mGameMode").onchange = ()=>{
+    const mode = $("#mGameMode").value;
+    const teams = matchGameModeOptions(mode);
+    $("#mTeamMode").innerHTML = teams.map(v=>'<option>'+v+'</option>').join('');
+  };
+  $("#saveCreateMatchBtn").onclick = async ()=>{
+    const payload = {
+      title: $("#mTitle").value.trim(),
+      image: $("#mImage").value.trim(),
+      entryFee: moneyNum($("#mEntry").value),
+      gameType: $("#mGameMode").value,
+      teamMode: $("#mTeamMode").value,
+      mapType: $("#mMapType").value,
+      perKillPrize: moneyNum($("#mPerKill").value),
+      winPrize: moneyNum($("#mWinPrize").value),
+      startTime: $("#mStart").value ? new Date($("#mStart").value) : null,
+      rule: $("#mRule").value.trim(),
+      status: $("#mStatus").value,
+      roomId: $("#mRoom").value.trim(),
+      password: $("#mPass").value.trim(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if(!payload.title) return toast("Title required","warn");
+    await db.collection("matches").add(payload);
+    toast("Tournament created!");
+    renderCreateForm();
+  };
+}
+
+$("#sbAccessKeyBtn").onclick = ()=>{
+  showModal(`
+    <div class="row between" style="margin-bottom:12px"><div class="h2">SubAdmin Access Key</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <label>Enter Access Key</label>
+    <input id="akInput" type="text" placeholder="Enter access key provided by Admin">
+    <button class="primary-btn" style="width:100%;margin-top:14px" id="submitAccessKeyBtn">Verify Access Key</button>
+  `);
+  $("#submitAccessKeyBtn").onclick = ()=>{
+    const key = $("#akInput").value.trim();
+    if(!key) return toast("Enter access key", "warn");
+    if(key === S.subDoc?.accessKey){
+      S.accessKeyEntered = true;
+      closeModal();
+      closeDrawer();
+      showCreateTab();
+      toast("Access verified! Create tab unlocked.");
+    } else {
+      toast("Invalid access key", "bad");
+    }
+  };
+};
 
 $("#addCashBtn").onclick = ()=>{
   if(!requirePhone()) return;
