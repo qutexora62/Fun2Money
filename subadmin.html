@@ -844,7 +844,17 @@ function initUserListeners(){
 }
 
 function renderProfileState(){
-  if(!S.profile) return;
+  if(!S.profile){
+    if(S.subDoc){
+      const sbId = S.subDoc.sbId || (S.user.email||'').replace(/^FN2M-/i, 'SB-') || 'SB-USER';
+      $("#profileDisplayName").textContent = S.subDoc.username || S.user.email;
+      $("#profileFn2mId").textContent = sbId;
+      $("#profileFn2mId").onclick = ()=> copyToClipboard(sbId);
+      $("#headerWalletBal").textContent = "₹0";
+      $("#mainWalletDisplay").textContent = "₹0";
+    }
+    return;
+  }
   
   if(S.profile.isBanned){
     let banOverlay = $("#banGuardOverlay");
@@ -868,7 +878,8 @@ function renderProfileState(){
   $("#headerWalletBal").textContent = bal;
   $("#mainWalletDisplay").textContent = bal;
 
-  const fn2mId = S.profile.userId || S.profile.id || "FN2M-USER";
+  let fn2mId = S.profile.userId || S.profile.id || "FN2M-USER";
+  if(S.subDoc) fn2mId = fn2mId.replace(/^FN2M-/i, 'SB-');
   $("#profileDisplayName").textContent = S.profile.username || S.user.email;
   $("#profileFn2mId").textContent = fn2mId;
   $("#profileFn2mId").onclick = ()=> copyToClipboard(fn2mId);
