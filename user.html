@@ -609,7 +609,7 @@ function openTermsModal(){
       <p><b>1. Fair Play Policy:</b> Cheating, hacking, exploiting bugs is strictly prohibited</p>
       <p><b>2. Account Responsibility:</b> You are responsible for all activities under your account</p>
       <p><b>3. Payment & Wallet:</b> False UTR = immediate ban</p>
-      <p><b>4. Withdrawals:</b> Max ₹300 per request/2 times per Day.</p>
+      <p><b>4. Withdrawals:</b> Min ₹80, Max ₹300 per request / 2 times per day.</p>
       <p><b>5. Prohibited Actions:</b><br>
       • Modified APKs, auto-clickers<br>
       • Manipulating localStorage or DevTools<br>
@@ -1186,8 +1186,8 @@ $("#withdrawCashBtn").onclick = ()=>{
     <div class="row between" style="margin-bottom:12px"><div class="h2">Withdraw Cash</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
     <label>UPI ID (e.g. name@upi)</label>
     <input id="wUpiId" placeholder="name@upi">
-    <label>Withdraw Amount (Max ₹300)</label>
-    <input id="wAmount" type="number" placeholder="100" max="300">
+    <label>Withdraw Amount (Min ₹80 / Max ₹300)</label>
+    <input id="wAmount" type="number" placeholder="80" min="80" max="300">
     <button class="success-btn" id="btnSubmitWithdraw" style="width:100%;margin-top:14px">Submit Withdrawal</button>
   `);
 
@@ -1197,7 +1197,7 @@ $("#withdrawCashBtn").onclick = ()=>{
     const currBal = Number(S.profile?.balance || 0);
 
     if(!upiId) return toast("Enter valid UPI ID", "warn");
-    if(amt <= 0 || amt > 300) return toast("Amount must be between ₹1 and ₹300", "warn");
+    if(amt < 80 || amt > 300) return toast("Amount must be between ₹80 and ₹300", "warn");
     if(amt > currBal) return toast("Insufficient wallet balance", "warn");
 
     const userRef = db.collection("profiles").doc(S.profile.id);
