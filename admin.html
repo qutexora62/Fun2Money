@@ -386,11 +386,11 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
 
-        <!-- SubAdmin Management Card -->
+        <!-- SubAdmin Management -->
         <div class="card">
           <div class="row between" style="margin-bottom:8px">
-            <div class="h3">SubAdmin Management</div>
-            <button class="primary-btn" id="addSubBtn" style="padding:6px 10px;font-size:12px">+ Add SubAdmin</button>
+            <div class="h3">SubAdmin</div>
+            <button class="primary-btn" id="addSubBtn" style="padding:6px 10px;font-size:12px">+ Add / Edit</button>
           </div>
           <div class="table-container">
             <div id="subAdminTable" class="table"></div>
@@ -1168,38 +1168,16 @@ async function processRequest(trxId, userEmail, amount, type, isApprove){
 function renderSubAdmins(){
   const list = $("#subAdminTable");
   if(!S.subProfiles.length){ list.innerHTML = `<div class="muted small" style="padding:10px">No sub-admins configured</div>`; return; }
-  list.innerHTML = `
-    <div class="table-row head">
-      <div>Name & Email</div>
-      <div>FN2M ID</div>
-      <div>Phone</div>
-      <div>Password</div>
-      <div>Balance</div>
-      <div>Status</div>
-      <div>Action</div>
-    </div>
-    ${S.subProfiles.map(s => {
-      const sbId = escapeHtml(s.sbId || '-');
-      const sEmail = escapeHtml(s.email || 'N/A');
-      const sName = escapeHtml(s.username || s.email?.split('@')[0] || 'SubAdmin');
-      const sPhone = escapeHtml(s.phone || '-');
-      const sPass = escapeHtml(s.password || 'N/A');
-      return `
-      <div class="table-row">
-        <div>
-          <b style="color:#FFF">${sName}</b>
-          <div class="tiny muted">${sEmail}</div>
-        </div>
-        <div style="color:var(--blue);cursor:pointer;font-weight:700" onclick="copyToClipboard('${sbId}')" title="Tap to copy">${sbId}</div>
-        <div style="font-family:monospace;color:#CBD5E1">${sPhone}</div>
-        <div style="font-family:monospace;color:#CBD5E1">${sPass}</div>
-        <div style="font-weight:700">${fmtMoney(s.balance)}</div>
-        <div><span class="badge ${s.status==='active'?'green':'red'}">${s.status||'active'}</span></div>
-        <div><button class="outline-btn" onclick="editSubAdmin('${escapeHtml(s.id)}')" style="padding:3px 8px;font-size:10px">Edit</button> <button class="danger-btn" onclick="deleteSubAdmin('${escapeHtml(s.id)}', '${sEmail}')" style="padding:3px 8px;font-size:10px">Delete</button></div>
-      </div>
-      `;
-    }).join("")}
-  `;
+  list.style.minWidth = "auto";
+  list.innerHTML = S.subProfiles.map(s => {
+    const sbId = escapeHtml(s.sbId || '-');
+    const sEmail = escapeHtml(s.email || 'N/A');
+    return `<div class="table-row" style="grid-template-columns:1fr auto auto;min-width:0">
+      <div style="color:var(--blue);cursor:pointer;font-weight:700" onclick="copyToClipboard('${sbId}')" title="Tap to copy">${sbId}</div>
+      <div><button class="outline-btn" onclick="editSubAdmin('${escapeHtml(s.id)}')" style="padding:3px 8px;font-size:10px">Edit</button></div>
+      <div><button class="danger-btn" onclick="deleteSubAdmin('${escapeHtml(s.id)}', '${sEmail}')" style="padding:3px 8px;font-size:10px">Delete</button></div>
+    </div>`;
+  }).join('');
 }
 
 function buildSubEmailOptions(){
