@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fun2Money SubAdmin</title>
+<style>
+:root{
+  --bg:#060B18;
+  --bg2:#0B1121;
+  --card:rgba(13,20,40,.72);
+  --card2:rgba(9,15,32,.88);
+  --stroke:rgba(255,255,255,.08);
+  --stroke2:rgba(255,255,255,.12);
+  --text:#EAF1FF;
+  --muted:#9FB0D0;
+  --blue:#4F6EF7;
+  --blue2:#3B82F6;
+  --green:#2DD4BF;
+  --green2:#10B981;
+  --red:#FB7185;
+  --danger:#EF4444;
+  --shadow: 0 18px 40px rgba(0,0,0,.35);
+  --radius-xl:20px;
+  --radius-lg:14px;
+  --radius-md:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:
+  radial-gradient(circle at top left, rgba(79,110,247,.16), transparent 28%),
+  radial-gradient(circle at top right, rgba(45,212,191,.12), transparent 24%),
+  linear-gradient(180deg, var(--bg), var(--bg2));
+  color:var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-height:100%;
+}
+body{min-height:100vh}
+a{color:inherit}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none !important}
+.container{max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow:hidden}
+.shell{min-height:100vh;display:flex;flex-direction:column}
+.screen{min-height:100vh;display:flex;flex-direction:column}
+.hero-bg{
+  position:fixed;inset:0;background-size:cover;background-position:center;filter:blur(0px) brightness(.45);opacity:.36;pointer-events:none;
+}
+.overlay-grad{
+  position:fixed;inset:0;background:linear-gradient(180deg, rgba(6,11,24,.15), rgba(6,11,24,.82));pointer-events:none;
+}
+.topbar{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:14px 14px 10px;background:linear-gradient(180deg, rgba(6,11,24,.9), rgba(6,11,24,.45), transparent);
+  backdrop-filter: blur(16px);
+}
+.topbar-title{flex:1;text-align:center;font-weight:800;letter-spacing:.2px;font-size:17px}
+.icon-btn,.ghost-btn,.pill-btn,.tab-btn,.danger-btn,.primary-btn,.success-btn,.outline-btn{
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.04);
+  color:var(--text);border-radius:14px;padding:11px 14px;
+  box-shadow:none;transition:.2s transform,.2s opacity,.2s background,.2s border-color;
+}
+.icon-btn{width:42px;height:42px;display:grid;place-items:center;padding:0}
+.icon-btn:active,.ghost-btn:active,.pill-btn:active,.tab-btn:active,.danger-btn:active,.primary-btn:active,.success-btn:active,.outline-btn:active{transform:scale(.98)}
+.primary-btn{background:linear-gradient(135deg, var(--blue), var(--blue2));border-color:transparent;font-weight:700}
+.success-btn{background:linear-gradient(135deg, var(--green), var(--green2));border-color:transparent;font-weight:700;color:#062019}
+.danger-btn{background:linear-gradient(135deg, var(--red), var(--danger));border-color:transparent;font-weight:700}
+.outline-btn{background:transparent}
+.pill-btn{padding:8px 12px;border-radius:999px}
+.card{
+  background:linear-gradient(180deg, rgba(16,23,45,.86), rgba(8,13,28,.84));
+  border:1px solid var(--stroke);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow);
+}
+.card.soft{background:rgba(255,255,255,.04)}
+.section{padding:0 14px 14px}
+.grid{display:grid;gap:12px}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.center{justify-content:center}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.tiny{font-size:11px}
+.h1{font-size:22px;font-weight:900;line-height:1.1}
+.h2{font-size:18px;font-weight:850}
+.h3{font-size:15px;font-weight:800}
+.stat{
+  padding:14px;border-radius:18px;background:linear-gradient(180deg, rgba(79,110,247,.12), rgba(255,255,255,.03));
+  border:1px solid rgba(79,110,247,.18)
+}
+.stat .value{font-size:20px;font-weight:900;margin-top:8px}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);font-size:12px
+}
+.badge.blue{background:rgba(59,130,246,.16);border-color:rgba(59,130,246,.22)}
+.badge.green{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.22)}
+.badge.red{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.22)}
+.badge.gray{background:rgba(255,255,255,.06)}
+input,select,textarea{
+  width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.09);
+  background:rgba(255,255,255,.05);color:var(--text);outline:none;
+}
+textarea{min-height:96px;resize:vertical}
+input::placeholder,textarea::placeholder{color:#8090B8}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 2px 6px}
+.hr{height:1px;background:rgba(255,255,255,.08);margin:12px 0}
+.list{display:grid;gap:10px}
+.item{
+  padding:12px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)
+}
+.item.clickable{cursor:pointer}
+.item.clickable:active{transform:scale(.995)}
+.avatar{
+  width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(135deg, rgba(79,110,247,.9), rgba(45,212,191,.8));font-weight:900
+}
+.avatar-img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.1)}
+.navbar{
+  position:sticky;bottom:0;z-index:18;margin-top:auto;
+  background:linear-gradient(180deg, rgba(6,11,24,.02), rgba(6,11,24,.72), rgba(6,11,24,.95));
+  backdrop-filter: blur(16px);
+  padding:10px 12px 14px;border-top:1px solid rgba(255,255,255,.06)
+}
+.bottom-nav{display:grid;gap:8px;grid-template-columns:repeat(var(--nav-count,4),1fr)}
+.tab-btn{padding:10px 8px;border-radius:16px;font-size:12px;text-align:center}
+.tab-btn.active{background:linear-gradient(135deg, rgba(79,110,247,.36), rgba(45,212,191,.2));border-color:rgba(79,110,247,.35)}
+.modal-backdrop,.drawer-backdrop{
+  position:fixed;inset:0;background:rgba(5,8,16,.72);backdrop-filter:blur(6px);z-index:30
+}
+.modal,.drawer{
+  position:fixed;z-index:31;background:linear-gradient(180deg, rgba(18,27,49,.98), rgba(10,16,31,.98));
+  border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 80px rgba(0,0,0,.48)
+}
+.modal{
+  left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,420px);max-height:88vh;overflow:auto;border-radius:24px;padding:16px
+}
+.drawer{top:0;right:0;height:100%;width:min(86vw,340px);transform:translateX(100%);transition:.25s transform;border-radius:24px 0 0 24px;padding:14px}
+.drawer.open{transform:translateX(0)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.drawer-menu{display:grid;gap:10px;margin-top:12px}
+.drawer-menu button{justify-content:flex-start;text-align:left}
+.toast-stack{
+  position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:60;display:grid;gap:8px;width:min(92vw,420px);pointer-events:none
+}
+.toast{
+  pointer-events:none;padding:12px 14px;border-radius:16px;background:rgba(12,18,34,.98);border:1px solid rgba(255,255,255,.08);
+  box-shadow:var(--shadow);border-left:4px solid var(--blue2)
+}
+.toast.good{border-left-color:var(--green2)}
+.toast.bad{border-left-color:var(--danger)}
+.toast.warn{border-left-color:#F59E0B}
+.hero-login{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden
+}
+.login-card{
+  width:min(100%,420px);padding:18px;border-radius:28px;background:rgba(8,13,28,.72);border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow);backdrop-filter: blur(16px)
+}
+.login-banner{
+  min-height:180px;border-radius:24px;background-size:cover;background-position:center;
+  border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden
+}
+.login-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg, rgba(6,11,24,.1), rgba(6,11,24,.7))}
+.login-banner .caption{position:absolute;left:14px;bottom:14px;right:14px;z-index:1}
+.switch-row{display:flex;gap:8px;background:rgba(255,255,255,.04);padding:6px;border-radius:16px;border:1px solid rgba(255,255,255,.08)}
+.switch-row button{flex:1}
+.switch-row button.active{background:rgba(79,110,247,.2);border-color:rgba(79,110,247,.4)}
+.page{padding:12px 14px 18px;display:none}
+.page.active{display:block}
+.slider{display:flex;overflow:auto;scroll-snap-type:x mandatory;gap:12px;padding-bottom:4px}
+.banner{min-width:100%;height:160px;border-radius:22px;overflow:hidden;position:relative;scroll-snap-align:start;border:1px solid rgba(255,255,255,.08)}
+.banner img{width:100%;height:100%;object-fit:cover}
+.banner .cap{position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(180deg, transparent, rgba(0,0,0,.72))}
+.card-tournament{
+  padding:12px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)
+}
+.card-tournament img{width:100%;height:138px;object-fit:cover;border-radius:16px}
+.kv{display:flex;flex-wrap:wrap;gap:8px}
+.kv span{padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);font-size:12px}
+.table{display:grid;gap:8px}
+.table-row{display:grid;gap:8px;grid-template-columns:1.2fr .8fr .7fr .7fr;align-items:center;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.table-row.head{background:rgba(79,110,247,.12);font-weight:800}
+.table-row.cols-2{grid-template-columns:1fr auto}
+.table-row.cols-3{grid-template-columns:1fr auto auto}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips .chip{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);font-size:12px}
+.profile-pic{
+  width:68px;height:68px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.12)
+}
+.pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pay-btn{padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);text-align:left}
+.pay-btn .amt{font-size:18px;font-weight:900;margin-top:6px}
+.right{margin-left:auto}
+.center-text{text-align:center}
+.no-scrollbar::-webkit-scrollbar{display:none}
+.no-scrollbar{scrollbar-width:none}
+@media (max-width:430px){
+  .login-card{border-radius:24px}
+  .table-row{grid-template-columns:1fr auto}
+  .table-row > *:nth-child(3), .table-row > *:nth-child(4){grid-column:1 / -1}
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="screen-login"></div>
+<div class="screen-app hidden"></div>
+<script>
+const CONFIG = {
+  apiKey: "AIzaSyBfeuzF89Xvg69E6Z7kT1fZdgeT-lwu7cI",
+  authDomain: "my-projects-96ad5.firebaseapp.com",
+  projectId: "my-projects-96ad5",
+  storageBucket: "my-projects-96ad5.firebasestorage.app",
+  messagingSenderId: "298309523988",
+  appId: "1:298309523988:web:6446ce9bb094e0176f2501",
+  "measurementId": "G-5E8SWF9CPP",
+  databaseURL: "https://my-projects-96ad5-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(CONFIG);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const rtdb = firebase.database();
+db.settings({ ignoreUndefinedProperties: true });
+
+const S = {
+  user: null,
+  profile: null,
+  role: "subadmin",
+  currentPage: "home",
+  currentTab: "home",
+  activeSection: "banners",
+  banners: [],
+  matches: [],
+  winners: [],
+  transactions: [],
+  profiles: [],
+  subProfiles: [],
+  settings: {},
+  paymentUrls: [],
+  socialLinks: [],
+  adminDoc: null,
+  joinedMatches: [],
+  notifications: [],
+  appUpdates: {},
+  currentMatch: null,
+  currentWinner: null,
+  selectedPaymentAmount: 0,
+  timer: null
+};
+
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+
+function toast(message, type="good"){
+  const box = document.createElement("div");
+  box.className = `toast ${type}`;
+  box.textContent = message;
+  $(".toast-stack").appendChild(box);
+  setTimeout(()=>{ box.style.opacity = "0"; box.style.transform = "translateY(6px)"; }, 2400);
+  setTimeout(()=> box.remove(), 3000);
+}
+
+function fmtMoney(v){
+  const n = Number(v || 0);
+  return "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(Math.round(n));
+}
+function fmtNumber(v){
+  const n = Number(v || 0);
+  if (n >= 1e9) return (n/1e9).toFixed(1).replace(/\.0$/, "") + "B";
+  if (n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1e3) return (n/1e3).toFixed(1).replace(/\.0$/, "") + "K";
+  return String(Math.round(n));
+}
+function randId(len=10){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out="";
+  for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+function randomAccessKey(){
+  return "FN2M-" + Math.random().toString(36).slice(2,6).toUpperCase();
+}
+function escapeHtml(s=""){
+  return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function avatarLabel(text="U"){ return String(text).slice(0,1).toUpperCase(); }
+function shortUid(uid=""){
+  return uid ? uid.slice(0,6) + "…" + uid.slice(-4) : "";
+}
+function ts(v){
+  if(!v) return "";
+  if(v.toDate) return v.toDate().toLocaleString();
+  if(v.seconds) return new Date(v.seconds * 1000).toLocaleString();
+  if(typeof v === "number") return new Date(v).toLocaleString();
+  return String(v);
+}
+function copySilent(text){
+  navigator.clipboard?.writeText(String(text||"")).catch(()=>{});
+}
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+function showModal(contentHtml, wide=false){
+  const bd = $(".modal-backdrop");
+  const m = $(".modal");
+  m.style.width = wide ? "min(96vw, 760px)" : "min(92vw, 420px)";
+  m.innerHTML = contentHtml;
+  bd.classList.remove("hidden");
+}
+function closeModal(){
+  $(".modal-backdrop").classList.add("hidden");
+  $(".modal").innerHTML = "";
+}
+function openDrawer(){
+  $(".drawer-backdrop").classList.remove("hidden");
+  $(".drawer").classList.add("open");
+}
+function closeDrawer(){
+  $(".drawer-backdrop").classList.add("hidden");
+  $(".drawer").classList.remove("open");
+}
+function setTopTitle(title){ $(".topbar-title").textContent = title; }
+function navSet(page){
+  S.currentTab = page;
+  $$("[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === page));
+  $$(".page").forEach(pg => pg.classList.remove("active"));
+  const node = document.getElementById(`page-${page}`);
+  if(node){ node.classList.add("active"); }
+}
+function subnavSet(section){
+  S.activeSection = section;
+  $$("[data-section]").forEach(btn => btn.classList.toggle("active", btn.dataset.section === section));
+  $$(".section-panel").forEach(p => p.classList.add("hidden"));
+  const node = document.getElementById(`panel-${section}`);
+  if(node) node.classList.remove("hidden");
+}
+function presenceRef(email){ return rtdb.ref(`presence/${email.replace(/[.@]/g, '_')}`); }
+function rtdbNotifyRef(){ return rtdb.ref("notifications"); }
+
+async function setPresence(state){
+  if(!S.user) return;
+  await presenceRef(S.user.email).set({
+    state,
+    role: S.role,
+    email: S.user.email,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  }).catch(()=>{});
+}
+function wirePresence(){
+  if(!S.user) return;
+  const ref = presenceRef(S.user.email);
+  ref.onDisconnect().set({
+    state: "offline",
+    role: S.role,
+    email: S.user.email,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+  setPresence("online");
+  window.addEventListener("beforeunload", ()=>{ try{ ref.set({state:"offline", role:S.role, email:S.user.email, updatedAt: firebase.database.ServerValue.TIMESTAMP}); }catch(e){} });
+}
+function listenNotifications(){
+  if(!S.user) return;
+  const ref = rtdbNotifyRef();
+  ref.off();
+  ref.limitToLast(30).on("value", snap => {
+    const val = snap.val() || {};
+    S.notifications = Object.entries(val).map(([id,v]) => ({id, ...v})).sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
+    renderNotifications();
+  });
+}
+function pushNotification(title, message, targetUser="all"){
+  const n = {
+    title, message, targetUser, createdAt: Date.now()
+  };
+  rtdbNotifyRef().push(n);
+  return db.collection("notifications").add({
+    title, message, targetUser, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(()=>{});
+}
+function listenBaseCollections(){
+  db.collection("settings").doc("general").onSnapshot(snap => {
+    S.settings = snap.exists ? (snap.data() || {}) : {};
+    renderSettingsBits();
+  });
+  db.collection("banners").orderBy("position", "asc").onSnapshot(snap => {
+    S.banners = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderBanners();
+  });
+  db.collection("matches").orderBy("createdAt", "desc").onSnapshot(snap => {
+    S.matches = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderMatches();
+  });
+  db.collection("winners").orderBy("rank", "asc").onSnapshot(snap => {
+    S.winners = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderWinners();
+  });
+  db.collection("paymentUrls").orderBy("amount", "asc").onSnapshot(snap => {
+    S.paymentUrls = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderPaymentUrls();
+  });
+  db.collection("socialLinks").orderBy("createdAt", "asc").onSnapshot(snap => {
+    S.socialLinks = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderSocialLinks();
+  });
+}
+function listenAccountCollections(){
+  if(!S.user) return;
+  db.collection("profiles").where("email", "==", S.user.email).onSnapshot(snap => {
+    S.profile = snap.docs.length ? snap.docs[0].data() : null;
+    renderProfileBits();
+  });
+}
+function renderSettingsBits(){}
+function renderBanners(){}
+function renderMatches(){}
+function renderWinners(){}
+function renderPaymentUrls(){}
+function renderSocialLinks(){}
+function renderProfileBits(){}
+function renderNotifications(){}
+function renderRecentActivities(){}
+function renderStats(){}
+function ensureAuthGate(cb){
+  auth.onAuthStateChanged(async user => {
+    S.user = user || null;
+    if(user){
+      wirePresence();
+      listenNotifications();
+      listenAccountCollections();
+      cb && cb(user);
+    } else {
+      S.profile = null;
+      $(".screen-login").classList.remove("hidden");
+      $(".screen-app").classList.add("hidden");
+      setPresence("offline").catch(()=>{});
+      cb && cb(null);
+    }
+  });
+}
+
+function authError(msg){
+  const el = $("#loginError");
+  if(el){ el.textContent = msg; el.classList.remove("hidden"); }
+}
+function clearAuthError(){
+  const el = $("#loginError");
+  if(el){ el.textContent = ""; el.classList.add("hidden"); }
+}
+function copyVal(v){ navigator.clipboard?.writeText(String(v||"")).catch(()=>{}); }
+function safeInt(v, fallback=0){ const n = parseInt(v,10); return Number.isFinite(n) ? n : fallback; }
+function safeFloat(v, fallback=0){ const n = parseFloat(v); return Number.isFinite(n) ? n : fallback; }
+function moneyNum(v){ return Math.max(0, Math.round(Number(v||0))); }
+
+function loginShell(bg, title, subtitle){
+  return `
+  <div class="hero-login">
+    <div class="hero-bg" style="background-image:url('${bg}')"></div>
+    <div class="overlay-grad"></div>
+    <div class="login-card">
+      <div class="login-banner" style="background-image:url('${bg}')">
+        <div class="caption">
+          <div class="badge blue">Fun2Money</div>
+          <div class="h1" style="margin-top:8px">${title}</div>
+          <div class="muted small" style="margin-top:6px">${subtitle}</div>
+        </div>
+      </div>
+      <div style="padding-top:14px" id="loginFormSlot"></div>
+      <div id="loginError" class="hidden" style="margin-top:10px;color:#FB7185;font-size:13px"></div>
+    </div>
+  </div>`;
+}
+</script>
+<script>
+function subLoginForm(){
+  return `
+    <label>Email</label><input id="email" type="email" placeholder="name@gmail.com">
+    <label>Access Key</label><input id="accessKey" placeholder="FN2M-CUTEXXXX">
+    <button class="primary-btn" style="width:100%;margin-top:14px" id="loginBtn">Login</button>
+    <div class="tiny muted" style="margin-top:12px">Gmail only. Access key format: <code>FN2M-XXXX</code></div>
+  `;
+}
+function ensureSubUI(){
+  $(".screen-login").innerHTML = loginShell("https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg", "Sub-Admin Panel", "Gmail + access key login, live tournaments aur wallet controls.");
+  $("#loginFormSlot").innerHTML = subLoginForm();
+  $("#loginBtn").onclick = subLogin;
+  $(".screen-app").innerHTML = `
+    <div class="shell">
+      <div class="topbar">
+        <div class="row">
+          <div class="avatar">F</div>
+          <div class="h3">Fun2Money</div>
+        </div>
+        <div class="topbar-title">Sub-Admin</div>
+        <div class="badge blue" id="subBal">₹0</div>
+      </div>
+      <div class="page active" id="page-home">
+        <div class="section">
+          <div class="grid grid-2" id="subStats"></div>
+        </div>
+      </div>
+      <div class="page" id="page-tournaments">
+        <div class="section">
+          <div class="card" style="padding:14px">
+            <div class="row between"><div class="h3">Tournaments</div><button class="primary-btn" id="subAddTournament">Create</button></div>
+            <div class="list" id="subMatchList" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="page" id="page-wallet">
+        <div class="section">
+          <div class="card" style="padding:14px">
+            <div class="row between"><div><div class="muted small">Available Balance</div><div class="h1" id="subWalletBalance">₹0</div></div><button class="outline-btn" id="subWithdrawBtn">Withdraw</button></div>
+            <div class="hr"></div>
+            <div class="h3">Profile</div>
+            <div id="subProfileBox"></div>
+          </div>
+        </div>
+      </div>
+      <div class="navbar">
+        <div class="bottom-nav" style="--nav-count:3">
+          <button class="tab-btn active" data-tab="home">Home</button>
+          <button class="tab-btn" data-tab="tournaments">Tournaments</button>
+          <button class="tab-btn" data-tab="wallet">Wallet</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-backdrop hidden"></div>
+    <div class="drawer">
+      <div class="drawer-header">
+        <div class="row">
+          <div class="avatar">S</div>
+          <div>
+            <div class="h3" id="subName">Sub-Admin</div>
+            <div class="tiny muted" id="subEmailText"></div>
+          </div>
+        </div>
+        <button class="icon-btn" id="closeDrawerBtn">✕</button>
+      </div>
+      <div class="drawer-menu">
+        <button class="ghost-btn" id="editSubProfileBtn">✏️ Edit Profile</button>
+        <button class="ghost-btn" id="helpSubBtn">💬 Help & Support</button>
+        <button class="danger-btn" id="logoutBtn">🚪 Logout</button>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden"></div>
+    <div class="modal"></div>
+    <div class="toast-stack"></div>
+  `;
+  wireSubUI();
+}
+function wireSubUI(){
+  $("#openDrawerBtn") && ($("#openDrawerBtn").onclick = openDrawer);
+  $("#closeDrawerBtn").onclick = closeDrawer;
+  $(".drawer-backdrop").onclick = closeDrawer;
+  $(".modal-backdrop").onclick = closeModal;
+  $("#logoutBtn").onclick = ()=> auth.signOut();
+  $("#helpSubBtn").onclick = ()=> window.open("https://chat.whatsapp.com/KiRYSqnMHbhLhpx4OC1IDD", "_blank");
+  $("#editSubProfileBtn").onclick = openSubProfileModal;
+  $$("[data-tab]").forEach(btn => btn.onclick = ()=> navSet(btn.dataset.tab));
+  $("#subAddTournament").onclick = ()=> openSubTournamentModal();
+  $("#subWithdrawBtn").onclick = openSubWithdrawModal;
+}
+async function subLogin(){
+  clearAuthError();
+  const email = $("#email").value.trim().toLowerCase();
+  const accessKey = $("#accessKey").value.trim();
+  if(!/@gmail\.com$/.test(email)) return authError("Gmail only.");
+  if(!/^FN2M-[A-Z0-9]{4}$/.test(accessKey)) return authError("Invalid access key format. Use FN2M-XXXX");
+  try{
+    const userCred = await auth.signInWithEmailAndPassword(email, accessKey);
+    // In practice, use real email/password. For single-file simplicity, key is also auth password fallback.
+    return userCred;
+  }catch(err){
+    // fallback check against subProfiles/accessKey
+    const doc = await db.collection("subProfiles").doc(email).get();
+    if(!doc.exists) return authError("Sub-admin profile not found.");
+    const data = doc.data() || {};
+    if(data.status === "deactive") return authError("Account deactivated.");
+    if(String(data.accessKey || "").trim() !== accessKey) return authError("Wrong access key.");
+    try{
+      const cred = await auth.signInWithEmailAndPassword(email, accessKey);
+      await postSubLogin(cred.user, data);
+    }catch(e2){
+      // Last resort: allow profile-based session state after password-style key
+      S.user = { uid: email, email };
+      await postSubLogin({ uid: email, email }, data, true);
+    }
+  }
+}
+async function postSubLogin(user, data, pseudo=false){
+  $(".screen-login").classList.add("hidden");
+  $(".screen-app").classList.remove("hidden");
+  await db.collection("subWallets").doc(user.email).set({ balance: Number(data.balance || 0) }, { merge:true });
+  listenSubCollections(user.email);
+  renderSubAll();
+  if(pseudo) toast("Logged in using access key", "warn");
+}
+function listenSubCollections(email){
+  db.collection("matches").orderBy("createdAt", "desc").onSnapshot(snap => {
+    S.matches = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderSubMatches();
+    renderSubStats();
+  });
+  db.collection("transactions").orderBy("createdAt", "desc").limit(40).onSnapshot(snap => {
+    S.transactions = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderSubStats();
+  });
+  db.collection("subProfiles").doc(email).onSnapshot(snap => {
+    S.profile = snap.exists ? snap.data() : {};
+    renderSubProfileBits();
+  });
+  db.collection("subWallets").doc(email).onSnapshot(snap => {
+    const bal = snap.exists ? Number((snap.data() || {}).balance || 0) : 0;
+    $("#subBal").textContent = fmtMoney(bal);
+    $("#subWalletBalance") && ($("#subWalletBalance").textContent = fmtMoney(bal));
+  });
+}
+function renderSubAll(){
+  renderSubStats();
+  renderSubMatches();
+  renderSubProfileBits();
+}
+function renderSubStats(){
+  const totalPlayers = S.settings.basePlayerCount || S.transactions.filter(t=>t.userId).length || 0;
+  const myBalance = Number((S.profile || {}).balance || 0);
+  const activeTournaments = S.matches.filter(m => String(m.status||"") === "live").length;
+  const totalEarned = S.transactions.filter(t => t.email === (S.user && S.user.email) && t.status === "success").reduce((a,b)=>a + Number(b.amount || 0), 0);
+  $("#subStats").innerHTML = `
+    <div class="stat"><div class="muted small">Total Players</div><div class="value">${fmtNumber(totalPlayers)}</div></div>
+    <div class="stat"><div class="muted small">My Balance</div><div class="value">${fmtMoney(myBalance)}</div></div>
+    <div class="stat"><div class="muted small">Active Tournaments</div><div class="value">${fmtNumber(activeTournaments)}</div></div>
+    <div class="stat"><div class="muted small">Total Earned</div><div class="value">${fmtMoney(totalEarned)}</div></div>
+  `;
+}
+function renderSubMatches(){
+  const list = $("#subMatchList");
+  if(!list) return;
+  list.innerHTML = S.matches.map(m => `
+    <div class="item">
+      <div class="row between">
+        <div><div class="h3">${escapeHtml(m.title || "")}</div><div class="tiny muted">${escapeHtml(m.gameType || '')} · ${escapeHtml(m.status || '')}</div></div>
+        <div class="badge gray">${fmtMoney(m.entryFee || 0)}</div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="outline-btn" data-edit-sub-match="${m.id}">Edit</button><button class="danger-btn" data-del-sub-match="${m.id}">Delete</button></div>
+    </div>
+  `).join("");
+  $$("[data-edit-sub-match]").forEach(btn => btn.onclick = ()=> openSubTournamentModal(S.matches.find(x=>x.id===btn.dataset.editSubMatch), btn.dataset.editSubMatch));
+  $$("[data-del-sub-match]").forEach(btn => btn.onclick = ()=> db.collection("matches").doc(btn.dataset.delSubMatch).delete().then(()=>toast("Deleted")));
+}
+function openSubTournamentModal(data={}, id=null){
+  showModal(`
+    <div class="row between"><div class="h2">${id ? "Edit" : "Create"} Tournament</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    ${renderMatchForm(data, !!id)}
+    <div class="tiny muted" style="margin-top:10px">Room update rewards ₹0.10 to your sub-wallet.</div>
+  `, true);
+  const oldOnclick = $("#saveMatchBtn").onclick;
+  $("#saveMatchBtn").onclick = async ()=>{
+    const beforeRoom = data.roomId || "";
+    const payload = {
+      title: $("#mTitle").value.trim(),
+      image: $("#mImage").value.trim(),
+      entryFee: moneyNum($("#mEntry").value),
+      gameType: $("#mGameMode").value,
+      teamMode: $("#mTeamMode").value,
+      mapType: $("#mMapType").value,
+      perKillPrize: moneyNum($("#mPerKill").value),
+      winPrize: moneyNum($("#mWinPrize").value),
+      startTime: $("#mStart").value ? new Date($("#mStart").value) : null,
+      rule: $("#mRule").value.trim(),
+      status: $("#mStatus").value,
+      roomId: $("#mRoom").value.trim(),
+      password: $("#mPass").value.trim(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if(id){
+      await db.collection("matches").doc(id).set(payload, { merge:true });
+      if((payload.roomId !== beforeRoom || payload.password !== (data.password || "")) && S.user && S.user.email){
+        await db.collection("subWallets").doc(S.user.email).set({ balance: firebase.firestore.FieldValue.increment(0.10) }, { merge:true });
+        await db.collection("subProfiles").doc(S.user.email).set({ balance: firebase.firestore.FieldValue.increment(0.10) }, { merge:true });
+      }
+    } else {
+      await db.collection("matches").add(payload);
+    }
+    closeModal();
+    toast("Saved");
+  };
+}
+function openSubWithdrawModal(){
+  showModal(`
+    <div class="row between"><div class="h2">Withdraw</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <label>UPI ID</label><input id="sUpi" placeholder="name@upi">
+    <label>Amount (₹45 - ₹250)</label><input id="sAmt" type="number" min="45" max="250">
+    <button class="primary-btn" id="submitSubWithdraw" style="width:100%;margin-top:12px">Submit</button>
+  `);
+  $("#submitSubWithdraw").onclick = async ()=>{
+    const upi = $("#sUpi").value.trim();
+    const amt = moneyNum($("#sAmt").value);
+    if(!upi || amt < 45 || amt > 250) return toast("Amount must be ₹45-₹250", "warn");
+    await db.collection("transactions").add({
+      userId: S.user.email, email: S.user.email, type:"sub_withdraw", amount: amt, status:"pending", method:"UPI", details:`Sub withdraw to ${upi}`, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal();
+    toast("Withdraw request sent");
+  };
+}
+function openSubProfileModal(){
+  const p = S.profile || {};
+  showModal(`
+    <div class="row between"><div class="h2">Profile</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <label>Full Name</label><input id="spName" value="${escapeHtml(p.name || '')}">
+    <label>Contact</label><input id="spContact" value="${escapeHtml(p.contact || '')}">
+    <label>Gender</label><input id="spGender" value="${escapeHtml(p.gender || '')}">
+    <label>Age</label><input id="spAge" type="number" value="${p.age ?? 18}">
+    <label>Device</label><input id="spDevice" value="${escapeHtml(p.device || '')}">
+    <button class="primary-btn" id="saveSubProfileBtn" style="width:100%;margin-top:12px">Save</button>
+  `);
+  $("#saveSubProfileBtn").onclick = async ()=>{
+    await db.collection("subProfiles").doc(S.user.email).set({
+      email:S.user.email,
+      name: $("#spName").value.trim(),
+      contact: $("#spContact").value.trim(),
+      gender: $("#spGender").value.trim(),
+      age: moneyNum($("#spAge").value),
+      device: $("#spDevice").value.trim(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge:true });
+    closeModal();
+    toast("Profile saved");
+  };
+}
+function renderSubProfileBits(){
+  const p = S.profile || {};
+  $("#subName").textContent = p.name || (S.user && S.user.email) || "Sub-Admin";
+  $("#subEmailText").textContent = S.user && S.user.email || "";
+  $("#subProfileBox").innerHTML = `
+    <div class="item">
+      <div class="row between"><div>Email</div><div>${escapeHtml(S.user && S.user.email || "")}</div></div>
+      <div class="row between"><div>Status</div><div class="badge ${p.status === 'deactive' ? 'red' : 'green'}">${escapeHtml(p.status || 'active')}</div></div>
+      <div class="row between"><div>Access Key</div><div>${escapeHtml(p.accessKey || '')}</div></div>
+    </div>
+  `;
+}
+function setupSubFlow(){
+  ensureSubUI();
+  auth.onAuthStateChanged(async user => {
+    if(!user) return;
+    S.user = user;
+    const doc = await db.collection("subProfiles").doc(user.email).get();
+    if(doc.exists){
+      const data = doc.data() || {};
+      if(data.status === "deactive"){ auth.signOut(); authError("Account deactivated"); return; }
+      $(".screen-login").classList.add("hidden");
+      $(".screen-app").classList.remove("hidden");
+      await db.collection("subWallets").doc(user.email).set({ balance: Number(data.balance || 0) }, { merge:true });
+      listenSubCollections(user.email);
+      renderSubAll();
+    } else {
+      authError("No sub-profile found");
+    }
+  });
+  ensureAuthGate(()=>{});
+}
+</script>
+<script>
+{
+  // shared boot
+  const loginBg = "https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg";
+  S.loginBg = loginBg;
+  
+}
+</script>
+<script>
+(async function(){
+  setupSubFlow();
+  $(".screen-login").innerHTML = loginShell("https://uploads.onecompiler.io/44jqs6n4d/44rjbpcq4/40106.jpg", "Sub-Admin Panel", "Gmail + access key login, live tournaments aur wallet controls.");
+  $("#loginFormSlot").innerHTML = subLoginForm();
+  $("#loginBtn").onclick = subLogin;
+})();
+</script>
+</body>
+</html>
