@@ -279,7 +279,20 @@ function buildAppUI(){
       <div class="topbar-title">Dashboard</div>
       <button class="icon-btn" id="openDrawerBtn">☰</button>
     </div>
-    <div class="page active" id="page-home"><div class="section"><div class="grid grid-2" id="statsGrid"></div><div style="margin-top:14px"><div class="h3" style="margin-bottom:10px">Recent Activity</div><div id="recentActivityList"></div></div></div></div>
+    <div class="page active" id="page-home">
+      <div class="section">
+        <div class="grid grid-2" id="statsGrid"></div>
+        <div class="card" style="padding:6px;margin-top:12px">
+          <div class="row" style="gap:6px;overflow-x:auto;padding-bottom:2px">
+            <button class="pill-btn active" data-filter="All">All Matches</button>
+            <button class="pill-btn" data-filter="upcoming">Upcoming</button>
+            <button class="pill-btn" data-filter="live">Live</button>
+            <button class="pill-btn" data-filter="coming-soon">Coming Soon</button>
+          </div>
+        </div>
+        <div id="homeMatchList" class="grid"></div>
+      </div>
+    </div>
     <div class="page" id="page-tournaments"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div class="h3">All Tournaments</div></div><div class="list" id="allMatchList" style="margin-top:12px"></div></div></div></div>
     <div class="page" id="page-wallet"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div><div class="muted small">Balance</div><div class="h1" id="walletBalance">₹0</div></div></div><div class="hr"></div><div class="h3">Recent Transactions</div><div id="transactionList"></div></div></div></div>
     <div class="page" id="page-profile"><div class="section"><div class="card" style="padding:14px;text-align:center"><div class="avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto" id="profileAvatar">U</div><div class="h3" style="margin-top:8px" id="profileName">User</div><div class="tiny muted" id="profileEmail"></div></div><div class="card soft" style="padding:14px;margin-top:12px"><div class="list" id="profileDetails"></div></div></div></div>
@@ -346,7 +359,7 @@ function listenBaseCollections(){
   db.collection("settings").doc("general").onSnapshot(snap => { S.settings = snap.exists ? snap.data() : {}; });
   db.collection("matches").orderBy("createdAt", "desc").onSnapshot(snap => {
     S.matches = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    renderMatches(); renderSubAdminMatches();
+    renderMatches(); renderHomeMatches(); renderSubAdminMatches();
   });
   db.collection("transactions").orderBy("createdAt", "desc").limit(40).onSnapshot(snap => {
     S.transactions = snap.docs.map(d => ({id:d.id, ...d.data()}));
@@ -369,13 +382,30 @@ function renderStats(){
     <div class="stat"><div class="muted small">Balance</div><div class="value">${fmtMoney(bal)}</div></div>
     <div class="stat"><div class="muted small">Tournaments</div><div class="value">${S.matches.length}</div></div>`;
   $("#walletBalance").textContent = fmtMoney(bal);
-  // Recent activity
-  const recent = S.transactions.slice(0,5);
-  $("#recentActivityList").innerHTML = recent.length ? recent.map(t => `
-    <div class="item row between">
-      <div><div class="small" style="text-transform:capitalize">${escapeHtml(t.type||'trx')}</div><div class="tiny muted">${ts(t.createdAt)}</div></div>
-      <div><b>${fmtMoney(t.amount)}</b> <span class="badge ${t.status==='success'?'green':t.status==='rejected'?'red':'gray'}">${t.status||'pending'}</span></div>
-    </div>`).join("") : '<div class="muted small">No activity</div>';
+}
+function renderHomeMatches(){
+  const list = $("#homeMatchList");
+  if(!list) return;
+  const activeFilter = $(".pill-btn.active")?.dataset.filter || "All";
+  const items = S.matches.filter(m => activeFilter === "All" || String(m.status||'').toLowerCase() === activeFilter.toLowerCase());
+  if(!items.length){ list.innerHTML = `<div class="muted small" style="padding:10px">No tournaments matching category</div>`; return; }
+  list.innerHTML = items.map(m => `
+    <div class="card-tournament">
+      <img src="${escapeHtml(m.image || 'https://via.placeholder.com/400x180')}" alt="">
+      <div class="row between" style="margin-top:10px">
+        <div class="h3">${escapeHtml(m.title)}</div>
+        <span class="badge ${m.status==='live'?'green':'blue'}">${m.status||'upcoming'}</span>
+      </div>
+      <div class="kv">
+        <span>${m.gameType || 'CS'}</span>
+        <span>${m.teamMode || 'SOLO'}</span>
+        <span>${m.mapType || 'BERMUDA'}</span>
+        <span>Entry: ${fmtMoney(m.entryFee)}</span>
+        <span>Win: ${fmtMoney(m.winPrize)}</span>
+        <span>Kill: ${fmtMoney(m.perKillPrize)}</span>
+      </div>
+    </div>
+  `).join("");
 }
 function renderMatches(){
   const list = $("#allMatchList");
@@ -502,6 +532,13 @@ function wireAppUI(){
   $("#drawerHelp").onclick = ()=> window.open("https://chat.whatsapp.com/KiRYSqnMHbhLhpx4OC1IDD", "_blank");
   $("#drawerAccessKey").onclick = showAccessKeyModal;
   $$("[data-tab]").forEach(b => b.onclick = ()=> navSet(b.dataset.tab));
+  $$("[data-filter]").forEach(chip => {
+    chip.onclick = ()=>{
+      $$("[data-filter]").forEach(c=>c.classList.remove("active"));
+      chip.classList.add("active");
+      renderHomeMatches();
+    };
+  });
   $("#subAddTournament").onclick = ()=> openSubTournamentModal();
 }
 // BOOT
