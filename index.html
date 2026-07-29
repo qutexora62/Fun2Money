@@ -3,28 +3,120 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fun2Money</title>
+<meta name="theme-color" content="#060B18">
+<title>Fun2Money Esports</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#060B18;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}
-.container{text-align:center}
-h1{font-size:2rem;margin-bottom:2rem;background:linear-gradient(135deg,#f7931a,#ffc107);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.links{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center}
-a{display:block;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1.2rem;font-weight:700;transition:transform .2s,box-shadow .2s}
-a:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(247,147,26,.3)}
-.admin{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#f7931a;border:2px solid #f7931a}
-.sub{background:linear-gradient(135deg,#2dd4bf,#10b981);color:#062019}
-.user{background:linear-gradient(135deg,#f7931a,#ffc107);color:#060B18}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(247,147,26,.3)}50%{box-shadow:0 0 40px rgba(247,147,26,.6)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes particle{0%{transform:translateY(0) scale(1);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh) scale(0);opacity:0}}
+html,body{min-height:100vh;overflow-x:hidden}
+body{
+  background:#060B18;color:#fff;font-family:Inter,system-ui,-apple-system,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;
+  position:relative;background:linear-gradient(135deg,#060B18,#0B1121,#1a1a2e,#060B18);
+  background-size:400% 400%;animation:bgMove 15s ease infinite;
+}
+.particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.particle{
+  position:absolute;bottom:-10px;width:6px;height:6px;border-radius:50%;
+  background:rgba(247,147,26,.4);animation:particle 8s linear infinite;
+}
+.particle:nth-child(1){left:10%;animation-delay:0s;width:4px;height:4px;background:rgba(79,110,247,.3)}
+.particle:nth-child(2){left:20%;animation-delay:2s;width:8px;height:8px;background:rgba(45,212,191,.3)}
+.particle:nth-child(3){left:35%;animation-delay:4s;width:5px;height:5px;background:rgba(247,147,26,.3)}
+.particle:nth-child(4){left:50%;animation-delay:1s;width:7px;height:7px;background:rgba(255,255,255,.15)}
+.particle:nth-child(5){left:65%;animation-delay:3s;width:3px;height:3px;background:rgba(79,110,247,.3)}
+.particle:nth-child(6){left:75%;animation-delay:5s;width:6px;height:6px;background:rgba(45,212,191,.3)}
+.particle:nth-child(7){left:85%;animation-delay:0.5s;width:5px;height:5px;background:rgba(247,147,26,.3)}
+.particle:nth-child(8){left:92%;animation-delay:3.5s;width:4px;height:4px;background:rgba(255,255,255,.12)}
+.container{position:relative;z-index:1;text-align:center;padding:20px;width:100%;max-width:520px;animation:fadeUp .8s ease}
+.logo{
+  width:90px;height:90px;border-radius:24px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#f7931a,#ffc107);font-size:36px;font-weight:900;color:#060B18;
+  animation:float 4s ease-in-out infinite,glow 3s ease-in-out infinite;
+}
+h1{font-size:2.4rem;font-weight:900;margin-bottom:4px;background:linear-gradient(135deg,#f7931a,#ffc107,#f7931a);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:bgMove 4s ease infinite}
+.subtitle{color:#9FB0D0;font-size:14px;margin-bottom:32px;letter-spacing:.5px}
+.cards{display:grid;gap:14px}
+.card{
+  display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:18px;text-decoration:none;color:#fff;
+  border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(12px);transition:all .35s cubic-bezier(.4,0,.2,1);
+  animation:fadeUp .6s ease backwards;position:relative;overflow:hidden;
+}
+.card::before{content:'';position:absolute;inset:0;border-radius:18px;opacity:0;transition:opacity .35s}
+.card:hover::before{opacity:1}
+.card:active{transform:scale(.97)}
+.card-icon{
+  width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  position:relative;z-index:1;
+}
+.card-body{flex:1;position:relative;z-index:1}
+.card-title{font-size:16px;font-weight:800;margin-bottom:2px}
+.card-desc{font-size:12px;color:rgba(255,255,255,.6)}
+.card-arrow{font-size:18px;opacity:.4;transition:opacity .3s,transform .3s;position:relative;z-index:1}
+.card:hover .card-arrow{opacity:1;transform:translateX(4px)}
+.card:nth-child(1){animation-delay:.1s}
+.card:nth-child(2){animation-delay:.25s}
+.card:nth-child(3){animation-delay:.4s}
+.admin-card{background:linear-gradient(135deg,rgba(79,110,247,.12),rgba(59,130,246,.06))}
+.admin-card::before{background:linear-gradient(135deg,rgba(79,110,247,.2),rgba(59,130,246,.1))}
+.admin-card .card-icon{background:linear-gradient(135deg,#4F6EF7,#3B82F6)}
+.sub-card{background:linear-gradient(135deg,rgba(45,212,191,.12),rgba(16,185,129,.06))}
+.sub-card::before{background:linear-gradient(135deg,rgba(45,212,191,.2),rgba(16,185,129,.1))}
+.sub-card .card-icon{background:linear-gradient(135deg,#2DD4BF,#10B981)}
+.user-card{background:linear-gradient(135deg,rgba(247,147,26,.12),rgba(255,193,7,.06))}
+.user-card::before{background:linear-gradient(135deg,rgba(247,147,26,.2),rgba(255,193,7,.1))}
+.user-card .card-icon{background:linear-gradient(135deg,#f7931a,#ffc107)}
+footer{margin-top:32px;font-size:12px;color:rgba(255,255,255,.25);position:relative;z-index:1;animation:fadeUp .6s ease .55s backwards}
+footer span{color:#f7931a}
+@media(max-width:400px){
+  .container{padding:14px}
+  h1{font-size:1.8rem}
+  .card{padding:14px 16px}
+  .card-icon{width:44px;height:44px;font-size:18px}
+}
 </style>
 </head>
 <body>
-<div class="container">
-<h1>Fun2Money</h1>
-<div class="links">
-<a class="admin" href="admin.html">Admin Panel</a>
-<a class="sub" href="subadmin.html">Sub Admin Panel</a>
-<a class="user" href="user.html">User Panel</a>
+<div class="particles">
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
 </div>
+<div class="container">
+  <div class="logo">F</div>
+  <h1>Fun2Money</h1>
+  <div class="subtitle">Esports Gaming Platform</div>
+  <div class="cards">
+    <a class="card admin-card" href="admin.html">
+      <div class="card-icon">⚙️</div>
+      <div class="card-body">
+        <div class="card-title">Admin Panel</div>
+        <div class="card-desc">Full control · Users · Matches · Revenue</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="card sub-card" href="subadmin.html">
+      <div class="card-icon">🛡️</div>
+      <div class="card-body">
+        <div class="card-title">Sub Admin Panel</div>
+        <div class="card-desc">Tournaments · Wallet · Withdrawals</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="card user-card" href="user.html">
+      <div class="card-icon">🎮</div>
+      <div class="card-body">
+        <div class="card-title">User Panel</div>
+        <div class="card-desc">Play · Deposit · Withdraw · Earn</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+  <footer>© 2026 Fun2Money <span>Esports</span></footer>
 </div>
 </body>
 </html>
