@@ -762,7 +762,8 @@ function renderActivities(){
     const txnProfile = S.profiles.find(p => p.email === t.userId);
     const txnDisplayId = txnProfile ? (txnProfile.userId || txnProfile.id) : (t.userId || '-');
     const txnEmail = txnProfile ? txnProfile.email : (t.userId || '-');
-    const txnPhone = txnProfile ? (txnProfile.phone || '-') : (t.phone || '-');
+    const isDepTxn = String(t.type || '').toLowerCase() === "deposit";
+    const txnPhone = isDepTxn ? escapeHtml(t.phone || (txnProfile?.phone || '-')) : escapeHtml(txnProfile?.phone || '-');
     return `
     <div class="list-item row between">
       <div>
@@ -1128,7 +1129,7 @@ function renderRequests(){
     const refDetail = isDeposit ? `UTR: ${t.utr || t.transactionId || t.details || 'N/A'}` : `UPI ID: ${t.upiId || t.details || 'N/A'}`;
     const reqProfile = S.profiles.find(p => p.email === t.userId);
     const displayFn2mId = escapeHtml(reqProfile ? (reqProfile.userId || reqProfile.id) : (t.userId || '-'));
-    const displayPhone = isDeposit ? escapeHtml(t.phone || (reqProfile?.phone || '-')) : '-';
+    const displayPhone = isDeposit ? escapeHtml(t.phone || (reqProfile?.phone || '-')) : escapeHtml(reqProfile?.phone || '-');
     return `
       <div class="list-item">
         <div class="row between">
