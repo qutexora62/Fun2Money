@@ -943,6 +943,7 @@ function renderMatches(){
         <span>Entry: ${fmtMoney(m.entryFee)}</span>
         <span>Win: ${fmtMoney(m.winPrize)}</span>
         <span>Kill: ${fmtMoney(m.perKillPrize)}</span>
+        ${m.startTime ? `<span>📅 ${ts(m.startTime)}</span>` : ''}
       </div>
     </div>
   `).join("");
@@ -963,6 +964,7 @@ function openMatchDetail(id){
       <span>Entry Fee: ${fmtMoney(m.entryFee)}</span>
       <span>Win Prize: ${fmtMoney(m.winPrize)}</span>
       <span>Per Kill: ${fmtMoney(m.perKillPrize)}</span>
+      ${m.startTime ? `<span>📅 ${ts(m.startTime)}</span>` : ''}
     </div>
     <div style="margin-top:12px;font-size:12px;color:var(--muted)">Rules: ${escapeHtml(m.rule || 'Fair play required.')}</div>
     <div style="margin-top:14px">
