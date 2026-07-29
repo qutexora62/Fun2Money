@@ -1,0 +1,1262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fun2Money">
+<title>Fun2Money User App</title>
+<style>
+:root{
+  --bg:#060B18;
+  --bg2:#0B1121;
+  --card:rgba(13,20,40,.82);
+  --card-solid:#0E162B;
+  --stroke:rgba(255,255,255,.09);
+  --stroke2:rgba(255,255,255,.14);
+  --text:#EAF1FF;
+  --muted:#9FB0D0;
+  --blue:#4F6EF7;
+  --blue2:#3B82F6;
+  --green:#10B981;
+  --green2:#059669;
+  --red:#FB7185;
+  --danger:#EF4444;
+  --amber:#F59E0B;
+  --cyan:#06B6D4;
+  --pink:#EC4899;
+  --shadow: 0 18px 40px rgba(0,0,0,.45);
+  --radius-xl:20px;
+  --radius-lg:14px;
+  --radius-md:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{
+  margin:0;padding:0;
+  background:#000000;
+  color:var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  height:100vh;width:100vw;
+  overflow:hidden;
+}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit;user-select:text}
+button{cursor:pointer}
+.hidden{display:none !important}
+
+/* Native Android Container Layout */
+.app-container{
+  max-width:480px;margin:0 auto;
+  height:100vh;height:100dvh;
+  position:relative;display:flex;flex-direction:column;
+  background:var(--bg);box-shadow: 0 0 50px rgba(0,0,0,0.9);
+  overflow:hidden;
+}
+
+/* Splash Screen (Welcome Screen) */
+#splashScreen{
+  position:fixed;inset:0;z-index:999;
+  background:#000000;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:40px 20px 24px;text-align:center;
+  animation: fadeIn 0.3s ease;
+}
+.splash-content{margin:auto 0;display:flex;flex-direction:column;align-items:center;gap:16px}
+.splash-title{
+  font-size:26px;font-weight:900;
+  background:linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #FF0844 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:0.5px;
+  text-shadow: 0 0 25px rgba(6,182,212,0.4);
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+.splash-subtitle{
+  font-size:17px;font-weight:700;
+  color:#FFF;
+  letter-spacing:0.3px;
+}
+.splash-author{
+  background:linear-gradient(90deg, var(--cyan), var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-weight:800;cursor:pointer;
+}
+.splash-author u{
+  text-decoration:underline;text-underline-offset:4px;
+}
+.splash-footer{
+  font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;max-width:320px;
+}
+
+/* Header Topbar */
+.topbar{
+  flex-shrink:0;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:0 14px;
+  background:linear-gradient(180deg, rgba(6,11,24,.98), rgba(6,11,24,.90));
+  backdrop-filter: blur(16px);
+  border-bottom:1px solid var(--stroke);
+  z-index:25;
+}
+.topbar-title{flex:1;text-align:center;font-size:17px;font-weight:800;letter-spacing:.2px}
+
+/* Page Scrollable Area */
+.app-content-area{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:12px 14px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Buttons & Controls */
+.icon-btn,.ghost-btn,.pill-btn,.tab-btn,.danger-btn,.primary-btn,.success-btn,.outline-btn{
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.05);
+  color:var(--text);border-radius:14px;padding:10px 14px;
+  font-weight:600;font-size:13px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:.12s transform, .12s background;
+}
+.icon-btn{width:40px;height:40px;padding:0;border-radius:12px}
+.icon-btn:active,.primary-btn:active,.success-btn:active,.danger-btn:active,.outline-btn:active{transform:scale(.96)}
+.primary-btn{background:linear-gradient(135deg, var(--blue), var(--blue2));border-color:transparent;font-weight:700;color:#FFF}
+.primary-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.success-btn{background:linear-gradient(135deg, var(--green), var(--green2));border-color:transparent;font-weight:700;color:#FFF}
+.danger-btn{background:linear-gradient(135deg, var(--red), var(--danger));border-color:transparent;font-weight:700;color:#FFF}
+.outline-btn{background:transparent;border-color:var(--stroke2)}
+.pill-btn{padding:7px 12px;border-radius:999px;font-size:12px;cursor:pointer;flex-shrink:0}
+.pill-btn.active{background:rgba(79,110,247,.25);border-color:rgba(79,110,247,.4);color:#FFF;font-weight:700}
+
+/* Cards & Badges */
+.card{
+  background:var(--card);
+  border:1px solid var(--stroke);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow);
+  backdrop-filter: blur(12px);
+  padding:14px;margin-bottom:12px;
+}
+.grid{display:grid;gap:10px}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.row{display:flex;align-items:center;gap:8px}
+.between{justify-content:space-between}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.tiny{font-size:11px}
+.h1{font-size:22px;font-weight:900}
+.h2{font-size:18px;font-weight:800}
+.h3{font-size:15px;font-weight:700}
+
+.badge{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);font-size:11px;font-weight:700;
+}
+.badge.blue{background:rgba(59,130,246,.16);color:#60A5FA;border-color:rgba(59,130,246,.3)}
+.badge.green{background:rgba(16,185,129,.16);color:#34D399;border-color:rgba(16,185,129,.3)}
+.badge.red{background:rgba(239,68,68,.16);color:#F87171;border-color:rgba(239,68,68,.3)}
+.badge.gray{background:rgba(255,255,255,.08);color:var(--muted)}
+.badge.amber{background:rgba(245,158,11,.16);color:#FBBF24;border-color:rgba(245,158,11,.3)}
+
+/* Inputs */
+input,select,textarea{
+  width:100%;padding:11px 12px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(0,0,0,.45);color:var(--text);outline:none;
+}
+textarea{min-height:85px;resize:vertical}
+label{display:block;font-size:12px;color:var(--text);margin:8px 2px 4px;font-weight:600}
+
+/* Tournament Item Cards */
+.card-tournament{
+  padding:12px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+  margin-bottom:10px;cursor:pointer;transition:transform .15s;
+}
+.card-tournament:active{transform:scale(.98)}
+.card-tournament img{width:100%;height:140px;object-fit:cover;border-radius:14px}
+.kv-box{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.kv-box span{padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:11px}
+
+/* Banners Carousel with Smooth Auto Loop */
+.slider{
+  display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+  gap:10px;padding-bottom:4px;scrollbar-width:none;
+  scroll-behavior: smooth;
+}
+.slider::-webkit-scrollbar{display:none}
+.banner-slide{min-width:100%;height:150px;border-radius:18px;overflow:hidden;position:relative;scroll-snap-align:start;border:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.banner-slide img{width:100%;height:100%;object-fit:cover}
+
+/* STABLE FIXED BOTTOM NAVIGATION BAR */
+.bottom-nav-bar{
+  flex-shrink:0;
+  height:65px;
+  background:#050913;
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:6px 12px 8px;
+  z-index:30;
+}
+.bottom-nav-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-items:center;height:100%;
+}
+.nav-tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:6px 4px;border-radius:14px;background:transparent;
+  border:none;color:#8E9BAE;font-size:11px;font-weight:600;
+  transition:all .15s ease;cursor:pointer;
+}
+.nav-tab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.nav-tab.active{
+  color:#5271FF;
+  background:rgba(24, 34, 68, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(79,110,247,0.2);
+}
+
+/* Modals & Drawer */
+.modal-backdrop,.drawer-backdrop{
+  position:fixed;inset:0;background:rgba(5,8,16,.75);backdrop-filter:blur(6px);z-index:50;
+}
+.modal{
+  position:fixed;z-index:51;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(92vw, 440px);max-height:88vh;overflow-y:auto;
+  background:var(--card-solid);border:1px solid var(--stroke);
+  border-radius:22px;padding:16px;box-shadow:var(--shadow);
+}
+.drawer{
+  position:fixed;top:0;right:0;z-index:51;height:100%;width:min(80vw,320px);
+  background:var(--card-solid);border-left:1px solid var(--stroke);
+  padding:16px;transform:translateX(100%);transition:transform .22s ease;
+}
+.drawer.open{transform:translateX(0)}
+
+/* Toast Stack */
+.toast-stack{
+  position:fixed;left:50%;bottom:80px;transform:translateX(-50%);z-index:60;
+  display:flex;flex-direction:column;gap:8px;width:min(90vw, 400px);pointer-events:none;
+}
+.toast{
+  padding:12px 14px;border-radius:14px;background:#0C1222;
+  border:1px solid var(--stroke);box-shadow:var(--shadow);font-size:12px;
+  font-weight:600;border-left:4px solid var(--blue);color:#FFF;
+}
+.toast.good{border-left-color:var(--green)}
+.toast.bad{border-left-color:var(--danger)}
+.toast.warn{border-left-color:var(--amber)}
+
+/* Auth Screen with Image Background */
+.login-screen{
+  height:100%;width:100%;display:flex;align-items:center;justify-content:center;padding:16px;
+  position:relative;overflow:hidden;background:#000 url('assets/theme.png') no-repeat center center / cover;
+}
+
+/* TRANSPARENT LOGIN CARD */
+.login-card{
+  width:100%;max-width:380px;padding:22px;border-radius:24px;
+  background:rgba(8, 13, 28, 0.55);border:1px solid rgba(255,255,255,0.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  position:relative;z-index:2;box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+}
+
+.link-btn{background:none;border:none;color:#60A5FA;font-weight:800;padding:0;cursor:pointer;font-size:12px;text-shadow:0 1px 4px rgba(0,0,0,0.8)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+
+<!-- FULLSCREEN STANDALONE PWA MANIFEST -->
+<script>
+const PWA_ICON_URL = "https://uploads.onecompiler.io/44jqs6n4d/1785233140328/67382.png";
+
+const manifestObj = {
+  "id": "/fun2money-esports-app",
+  "name": "Fun2Money",
+  "short_name": "Fun2Money",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "background_color": "#060B18",
+  "theme_color": "#060B18",
+  "orientation": "portrait",
+  "icons": [
+    { "src": PWA_ICON_URL, "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": PWA_ICON_URL, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+};
+
+const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
+const manifestURL = URL.createObjectURL(manifestBlob);
+const linkManifest = document.createElement('link');
+linkManifest.rel = 'manifest';
+linkManifest.href = manifestURL;
+document.head.appendChild(linkManifest);
+
+const linkIcon = document.createElement('link');
+linkIcon.rel = 'apple-touch-icon';
+linkIcon.href = PWA_ICON_URL;
+document.head.appendChild(linkIcon);
+
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    self.addEventListener('install', (e) => self.skipWaiting());
+    self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+    self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<!-- SPLASH SCREEN / WELCOME SCREEN -->
+<div id="splashScreen">
+  <div class="splash-content">
+    <div class="splash-title">Welcome Your Fun2Money</div>
+    <div class="splash-subtitle">
+      💫Made by : <span class="splash-author" onclick="openWhatsAppChat()"><u>CUTEXORA</u></span>✨️
+    </div>
+  </div>
+  <div class="splash-footer">
+    Fun2Money Esports • Fair Play & Secure Gaming<br>
+    Terms, Privacy Policy & App Disclaimer Applied.
+  </div>
+</div>
+
+<div class="app-container">
+  <!-- Auth Screen with assets/theme.png Background -->
+  <div id="authScreen" class="login-screen hidden">
+    <!-- TRANSPARENT CARD -->
+    <div class="login-card">
+      <div style="text-align:center;margin-bottom:16px">
+        <div class="badge blue" style="margin-bottom:6px">Fun2Money Esports</div>
+        <div class="h1" id="authTitle" style="text-shadow: 0 2px 8px rgba(0,0,0,0.8)">User Login</div>
+        <div class="small" style="margin-top:4px;color:#E2E8F0;text-shadow: 0 1px 4px rgba(0,0,0,0.9)">Play & Earn Cash Daily</div>
+      </div>
+      <div id="authFormSlot"></div>
+      <div id="loginError" class="tiny hidden" style="color:var(--red);margin-top:10px;text-align:center;font-weight:700"></div>
+    </div>
+  </div>
+
+  <!-- Main Application Shell (Mobile Layout) -->
+  <div id="appShell" class="hidden" style="display:flex;flex-direction:column;height:100%;width:100%;overflow:hidden">
+    <!-- Header Topbar -->
+    <div class="topbar">
+      <button class="icon-btn" id="openDrawerBtn">☰</button>
+      <div class="topbar-title">Fun2Money</div>
+      <div class="badge green" id="headerWalletBal" style="cursor:pointer" onclick="switchTab('wallet')">₹0</div>
+    </div>
+
+    <!-- Page Views Container (Scrollable Content) -->
+    <div class="app-content-area">
+      
+      <!-- PAGE: HOME -->
+      <div class="page-view" id="page-home">
+        <div class="card" style="padding:10px;margin-bottom:12px">
+          <div class="slider" id="bannerSlider"></div>
+        </div>
+
+        <div class="card" style="padding:6px;margin-bottom:12px">
+          <div class="row" style="gap:6px;overflow-x:auto;padding-bottom:2px">
+            <button class="pill-btn active" data-filter="All">All Matches</button>
+            <button class="pill-btn" data-filter="upcoming">Upcoming</button>
+            <button class="pill-btn" data-filter="live">Live</button>
+            <button class="pill-btn" data-filter="coming-soon">Coming Soon</button>
+          </div>
+        </div>
+
+        <div id="homeMatchList" class="grid"></div>
+      </div>
+
+      <!-- PAGE: MATCHES (JOINED) -->
+      <div class="page-view hidden" id="page-matches">
+        <div class="card">
+          <div class="h3" style="margin-bottom:10px">Joined Tournaments</div>
+          <div id="joinedMatchesList" class="grid"></div>
+        </div>
+      </div>
+
+      <!-- PAGE: WINNERS -->
+      <div class="page-view hidden" id="page-winners">
+        <div class="card">
+          <div class="h3" style="margin-bottom:10px">Tournament Leaderboard & Winners</div>
+          <div id="userWinnersList" class="grid"></div>
+        </div>
+      </div>
+
+      <!-- PAGE: WALLET -->
+      <div class="page-view hidden" id="page-wallet">
+        <div class="card">
+          <div class="row between">
+            <div>
+              <div class="muted small">Available Balance</div>
+              <div class="h1" id="mainWalletDisplay" style="color:var(--green)">₹0</div>
+            </div>
+            <span class="badge green">Active Wallet</span>
+          </div>
+          <div class="row" style="margin-top:14px;gap:10px">
+            <button class="primary-btn" id="addCashBtn" style="flex:1">+ Add Cash</button>
+            <button class="outline-btn" id="withdrawCashBtn" style="flex:1">Withdraw</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="h3" style="margin-bottom:10px">Transaction History</div>
+          <div id="walletHistoryList" class="grid"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STABLE FIXED BOTTOM NAVIGATION BAR -->
+    <div class="bottom-nav-bar">
+      <div class="bottom-nav-grid">
+        <button class="nav-tab active" data-tab="home">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-tab" data-tab="matches">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55-.45 1-1 1H7.5"/>
+            <path d="M14 14.66V17c0 .55.45 1 1 1h1.5"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+          </svg>
+          <span>Matches</span>
+        </button>
+        <button class="nav-tab" data-tab="winners">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>Winners</span>
+        </button>
+        <button class="nav-tab" data-tab="wallet">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="4" width="20" height="16" rx="3"/>
+            <circle cx="16" cy="12" r="2"/>
+          </svg>
+          <span>Wallet</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide Drawer Menu -->
+  <div class="drawer-backdrop hidden" id="drawerBackdrop"></div>
+  <div class="drawer" id="drawerMenu">
+    <div class="row between" style="margin-bottom:16px">
+      <div class="h3">User Profile</div>
+      <button class="icon-btn" id="closeDrawerBtn">✕</button>
+    </div>
+    <div class="card" style="padding:12px;margin-bottom:12px;text-align:center">
+      <div class="h2" id="profileDisplayName">Gamer</div>
+      <div class="tiny muted" style="margin-top:4px">FN2M ID: <b id="profileFn2mId" style="color:var(--blue);cursor:pointer">FN2M-0000</b></div>
+    </div>
+    <div class="grid">
+      <button class="ghost-btn" id="btnEditProfile" style="justify-content:flex-start">✏️ Edit Profile Details</button>
+      <button class="ghost-btn" id="btnHelpDesk" style="justify-content:flex-start">💬 Support & Telegram</button>
+      <button class="danger-btn" id="btnLogout" style="width:100%;margin-top:10px">🚪 Sign Out</button>
+    </div>
+    <div style="margin-top:20px;font-size:11px;color:var(--muted)" id="appDescFooter">
+      Fun2Money Esports Platform
+    </div>
+  </div>
+
+  <!-- Modal Container -->
+  <div class="modal-backdrop hidden" id="modalBackdrop"></div>
+  <div class="modal hidden" id="modalContainer"></div>
+
+  <!-- Toast Stack -->
+  <div class="toast-stack" id="toastStack"></div>
+</div>
+
+<script>
+// --- ORIGINAL FIREBASE CONFIGURATION ---
+const CONFIG = {
+  apiKey: "AIzaSyBfeuzF89Xvg69E6Z7kT1fZdgeT-lwu7cI",
+  authDomain: "my-projects-96ad5.firebaseapp.com",
+  projectId: "my-projects-96ad5",
+  storageBucket: "my-projects-96ad5.firebasestorage.app",
+  messagingSenderId: "298309523988",
+  appId: "1:298309523988:web:6446ce9bb094e0176f2501",
+  measurementId: "G-5E8SWF9CPP",
+  databaseURL: "https://my-projects-96ad5-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+firebase.initializeApp(CONFIG);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const rtdb = firebase.database();
+db.settings({ ignoreUndefinedProperties: true });
+
+// Track listeners to unsubscribe on logout
+let activeListeners = [];
+let bannerTimer = null;
+
+// App State
+const S = {
+  user: null,
+  profile: null,
+  banners: [],
+  matches: [],
+  joinedMatches: [],
+  winners: [],
+  transactions: [],
+  paymentUrls: [],
+  settings: {},
+  selectedPayAmount: 0,
+  termsAgreed: false
+};
+
+// Helpers
+const $ = sel => document.querySelector(sel);
+const $$ = sel => [...document.querySelectorAll(sel)];
+
+function toast(msg, type="good"){
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  $("#toastStack").appendChild(t);
+  setTimeout(()=> { t.style.opacity="0"; t.style.transform="translateY(6px)"; }, 2200);
+  setTimeout(()=> t.remove(), 2600);
+}
+
+function fmtMoney(v){ return "₹" + Math.round(Number(v||0)).toLocaleString('en-IN'); }
+function moneyNum(v){ const n = parseFloat(v); return isNaN(n) ? 0 : Math.max(0, Math.round(n)); }
+function escapeHtml(s=""){ return String(s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function randId(len=8){ return Math.random().toString(36).slice(2, 2+len).toUpperCase(); }
+
+function ts(v){
+  if(!v) return "";
+  if(v.toDate) return v.toDate().toLocaleString();
+  if(v.seconds) return new Date(v.seconds * 1000).toLocaleString();
+  if(typeof v === "number") return new Date(v).toLocaleString();
+  return String(v);
+}
+
+function copyToClipboard(text){
+  if(!text) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(String(text)).then(()=>{ toast(`Copied: ${text}`, "good"); });
+  } else {
+    const ta = document.createElement("textarea"); ta.value = String(text);
+    document.body.appendChild(ta); ta.select(); document.execCommand("copy");
+    document.body.removeChild(ta); toast(`Copied: ${text}`, "good");
+  }
+}
+
+function showModal(html){
+  $("#modalContainer").innerHTML = html;
+  $("#modalBackdrop").classList.remove("hidden");
+  $("#modalContainer").classList.remove("hidden");
+}
+function closeModal(){
+  $("#modalBackdrop").classList.add("hidden");
+  $("#modalContainer").classList.add("hidden");
+  $("#modalContainer").innerHTML = "";
+}
+
+// Redirect to WhatsApp chat
+function openWhatsAppChat(){
+  const phone = "2250701160834";
+  const messageText = `━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👋 Hello AJ!
+
+💚 I'm happy to join the FN2M Family.
+
+Thank you for creating this amazing platform.
+
+🚀 Ready to Play
+🏆 Ready to Win
+💰 Ready to Earn
+
+❤️ Let's make this journey amazing together!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  const message = encodeURIComponent(messageText);
+  window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+}
+
+// Navigation Controls
+function switchTab(tabId){
+  $$(".nav-tab").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
+  $$(".page-view").forEach(pg => pg.classList.add("hidden"));
+  $(`#page-${tabId}`).classList.remove("hidden");
+  $(".app-content-area").scrollTop = 0;
+}
+
+// Terms & Conditions Modal Workflow
+function openTermsModal(){
+  showModal(`
+    <div class="row between" style="margin-bottom:12px"><div class="h2">Terms & Conditions</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <div style="font-size:12px;line-height:1.6;color:#D1D5DB;max-height:60vh;overflow-y:auto;padding-right:6px">
+      <p><b>1. Fair Play Policy:</b> Cheating, hacking, exploiting bugs is strictly prohibited</p>
+      <p><b>2. Account Responsibility:</b> You are responsible for all activities under your account</p>
+      <p><b>3. Payment & Wallet:</b> False UTR = immediate ban</p>
+      <p><b>4. Withdrawals:</b> Max ₹300 per request/2 times per Day.</p>
+      <p><b>5. Prohibited Actions:</b><br>
+      • Modified APKs, auto-clickers<br>
+      • Manipulating localStorage or DevTools<br>
+      • Multiple accounts for bonus abuse<br>
+      • Filing false payment disputes</p>
+      <p><b>6. Account Suspension:</b> Admin may ban any account without refund.</p>
+      <p><b>7. Data & Privacy:</b> Email and profile data stored locally</p>
+      <p><b>8. Liability:</b> Fun2Money not responsible for user negligence.</p>
+      <p><b>9. Profile Requirements:</b> Real Game FF UID and Game Level (min 30) required. Save Email & Password - no recovery feature.</p>
+      <p style="color:var(--red);font-weight:700">🚫 Violation = permanent ban without refund.</p>
+    </div>
+    <button class="success-btn" style="width:100%;margin-top:14px" id="btnAcceptTermsModal">I understand & agree</button>
+  `);
+
+  $("#btnAcceptTermsModal").onclick = ()=>{
+    S.termsAgreed = true;
+    closeModal();
+    const chk = $("#chkTerms");
+    if(chk){
+      chk.checked = true;
+      chk.disabled = false;
+    }
+    const btn = $("#btnSubmitAuth");
+    if(btn) btn.disabled = false;
+  };
+}
+
+// Auth Forms Render
+function renderAuthForm(isSignup=false){
+  S.termsAgreed = false;
+  $("#authTitle").textContent = isSignup ? "Create Account" : "User Login";
+  
+  if(!isSignup){
+    $("#authFormSlot").innerHTML = `
+      <label>Email / Gmail</label>
+      <input id="accEmail" type="email" placeholder="you@gmail.com">
+      <label>Password</label>
+      <input id="accPass" type="password" placeholder="••••••••">
+      <button class="primary-btn" style="width:100%;margin-top:16px" id="btnSubmitAuth">Sign In</button>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:#CBD5E1">
+        Don't have any account ? <button class="link-btn" onclick="renderAuthForm(true)">Signup</button>
+      </div>
+    `;
+  } else {
+    $("#authFormSlot").innerHTML = `
+      <label>Gmail Address</label>
+      <input id="accEmail" type="email" placeholder="you@gmail.com">
+      <label>Create Password</label>
+      <input id="accPass" type="password" placeholder="••••••••">
+      <div style="margin-top:12px;font-size:12px;display:flex;align-items:center;gap:6px">
+        <input type="checkbox" id="chkTerms" style="width:auto" disabled onclick="return false;">
+        <span>I agree to <button class="link-btn" type="button" onclick="openTermsModal()">terms & conditions.</button></span>
+      </div>
+      <button class="primary-btn" style="width:100%;margin-top:16px" id="btnSubmitAuth" disabled>Register Account</button>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:#CBD5E1">
+        Already have an account ? <button class="link-btn" onclick="renderAuthForm(false)">Login</button>
+      </div>
+    `;
+  }
+
+  $("#btnSubmitAuth").onclick = async ()=>{
+    const email = $("#accEmail").value.trim().toLowerCase();
+    const pass = $("#accPass").value;
+    $("#loginError").classList.add("hidden");
+
+    if(isSignup && !S.termsAgreed){
+      $("#loginError").textContent = "Please accept terms & conditions first";
+      $("#loginError").classList.remove("hidden");
+      return;
+    }
+
+    try{
+      if(isSignup){
+        if(!email.endsWith("@gmail.com")){
+          $("#loginError").textContent = "Valid @gmail.com required";
+          $("#loginError").classList.remove("hidden");
+          return;
+        }
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        const newFn2mId = "FN2M-" + randId(6);
+        const signupBonus = Number(S.settings.signupBonus || 0);
+
+        await db.collection("profiles").doc(newFn2mId).set({
+          balance: signupBonus,
+          isBanned: false,
+          userId: newFn2mId,
+          username: email.split('@')[0],
+          email: email,
+          password: pass,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        toast("Account created!");
+      } else {
+        await auth.signInWithEmailAndPassword(email, pass);
+      }
+    }catch(err){
+      $("#loginError").textContent = err.message || "Authentication failed";
+      $("#loginError").classList.remove("hidden");
+    }
+  };
+}
+
+// FAST REALTIME SIGN OUT EXECUTION
+async function handleSignOut(){
+  closeDrawer();
+  closeModal();
+
+  // Unsubscribe all active listeners instantly
+  activeListeners.forEach(unsub => { try{ unsub(); }catch(e){} });
+  activeListeners = [];
+
+  if(bannerTimer) { clearInterval(bannerTimer); bannerTimer = null; }
+
+  // Reset local state cache
+  S.user = null;
+  S.profile = null;
+  S.transactions = [];
+  S.joinedMatches = [];
+
+  // Switch view to Auth Screen immediately
+  $("#appShell").classList.add("hidden");
+  $("#authScreen").classList.remove("hidden");
+  renderAuthForm(false);
+
+  toast("Signed out successfully");
+
+  // Perform Firebase Signout
+  await auth.signOut().catch(()=>{});
+}
+
+function closeDrawer(){
+  $("#drawerBackdrop").classList.add("hidden");
+  $("#drawerMenu").classList.remove("open");
+}
+
+$("#openDrawerBtn").onclick = ()=> { $("#drawerBackdrop").classList.remove("hidden"); $("#drawerMenu").classList.add("open"); };
+$("#closeDrawerBtn").onclick = closeDrawer;
+$("#drawerBackdrop").onclick = closeDrawer;
+$("#modalBackdrop").onclick = closeModal;
+$("#btnLogout").onclick = handleSignOut;
+
+$$("[data-tab]").forEach(btn => btn.onclick = ()=> switchTab(btn.dataset.tab));
+
+// Splash Screen Timer Handler
+setTimeout(() => {
+  const splash = $("#splashScreen");
+  if (splash) {
+    splash.style.transition = "opacity 0.4s ease";
+    splash.style.opacity = "0";
+    setTimeout(() => splash.remove(), 400);
+  }
+}, 2500);
+
+// Auth State Check Gate
+auth.onAuthStateChanged(async user => {
+  if(user){
+    S.user = user;
+    $("#authScreen").classList.add("hidden");
+    $("#appShell").classList.remove("hidden");
+    initUserListeners();
+  } else {
+    S.user = null;
+    $("#authScreen").classList.remove("hidden");
+    $("#appShell").classList.add("hidden");
+    renderAuthForm(false);
+  }
+});
+
+// Live Data Synchronizer
+function initUserListeners(){
+  activeListeners.forEach(unsub => { try{ unsub(); }catch(e){} });
+  activeListeners = [];
+
+  const unsubProfile = db.collection("profiles").where("email", "==", S.user.email).onSnapshot(snap => {
+    if(!snap.docs.length){
+      toast("Account deleted by admin. Logging out...", "bad");
+      setTimeout(() => handleSignOut(), 1500);
+      return;
+    }
+    S.profile = {id: snap.docs[0].id, ...snap.docs[0].data()};
+    renderProfileState();
+    renderWinners();
+  }); activeListeners.push(unsubProfile);
+
+  const unsubSettings = db.collection("settings").doc("general").onSnapshot(snap => {
+    S.settings = snap.exists ? snap.data() : {};
+    $("#appDescFooter").textContent = S.settings.appDescription || "Fun2Money Esports Platform";
+  }); activeListeners.push(unsubSettings);
+
+  const unsubBanners = db.collection("banners").orderBy("position", "asc").onSnapshot(snap => {
+    S.banners = snap.docs.map(d=>d.data());
+    renderBanners();
+  }); activeListeners.push(unsubBanners);
+
+  const unsubMatches = db.collection("matches").orderBy("createdAt", "desc").onSnapshot(snap => {
+    S.matches = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderMatches();
+    renderJoinedMatches();
+  }); activeListeners.push(unsubMatches);
+
+  const unsubJoined = db.collection("joinedMatches").where("userId", "==", S.user.email).onSnapshot(snap => {
+    S.joinedMatches = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderJoinedMatches();
+  }); activeListeners.push(unsubJoined);
+
+  const unsubWinners = db.collection("winners").orderBy("rank", "asc").onSnapshot(snap => {
+    S.winners = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderWinners();
+  }); activeListeners.push(unsubWinners);
+
+  const unsubTxns = db.collection("transactions").where("userId", "==", S.user.email).onSnapshot(snap => {
+    S.transactions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderHistory();
+  }); activeListeners.push(unsubTxns);
+
+  const unsubPayments = db.collection("paymentUrls").onSnapshot(snap => {
+    S.paymentUrls = snap.docs.map(d=>d.data());
+  }); activeListeners.push(unsubPayments);
+}
+
+function renderProfileState(){
+  if(!S.profile) return;
+  
+  if(S.profile.isBanned){
+    let banOverlay = $("#banGuardOverlay");
+    if(!banOverlay){
+      banOverlay = document.createElement("div");
+      banOverlay.id = "banGuardOverlay";
+      banOverlay.style = "position:fixed;inset:0;z-index:99;background:rgba(5,9,20,.96);display:flex;align-items:center;justify-content:center;padding:20px;text-align:center";
+      banOverlay.innerHTML = `
+        <div class="card" style="max-width:360px;padding:20px">
+          <div class="h1" style="color:var(--red)">Account Banned</div>
+          <div class="small muted" style="margin-top:10px">Your account has been suspended by the Admin due to policy violation.</div>
+        </div>
+      `;
+      document.body.appendChild(banOverlay);
+    }
+  } else {
+    $("#banGuardOverlay")?.remove();
+  }
+
+  const bal = fmtMoney(S.profile.balance || 0);
+  $("#headerWalletBal").textContent = bal;
+  $("#mainWalletDisplay").textContent = bal;
+
+  const fn2mId = S.profile.userId || S.profile.id || "FN2M-USER";
+  $("#profileDisplayName").textContent = S.profile.username || S.user.email;
+  $("#profileFn2mId").textContent = fn2mId;
+  $("#profileFn2mId").onclick = ()=> copyToClipboard(fn2mId);
+}
+
+// Banner rendering with Auto 5-Second Carousel Loop
+function renderBanners(){
+  const slider = $("#bannerSlider");
+  if(bannerTimer) { clearInterval(bannerTimer); bannerTimer = null; }
+  
+  if(!S.banners.length){ 
+    slider.innerHTML = `<div class="banner-slide"><div style="padding:20px;text-align:center">Fun2Money Esports</div></div>`; 
+    return; 
+  }
+  
+  slider.innerHTML = S.banners.map(b => `
+    <div class="banner-slide">
+      <img src="${escapeHtml(b.imageUrl)}" alt="banner">
+    </div>
+  `).join("");
+
+  // Auto 5-Second Loop Carousel
+  if(S.banners.length > 1){
+    let currentIndex = 0;
+    bannerTimer = setInterval(() => {
+      currentIndex = (currentIndex + 1) % S.banners.length;
+      const slideWidth = slider.clientWidth + 10;
+      slider.scrollTo({
+        left: currentIndex * slideWidth,
+        behavior: 'smooth'
+      });
+    }, 5000);
+  }
+}
+
+// Tournament Filters
+$$("[data-filter]").forEach(chip => {
+  chip.onclick = ()=> {
+    $$("[data-filter]").forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    renderMatches();
+  };
+});
+
+function renderMatches(){
+  const list = $("#homeMatchList");
+  const activeFilter = $(".pill-btn.active")?.dataset.filter || "All";
+
+  const items = S.matches.filter(m => activeFilter === "All" || String(m.status||'').toLowerCase() === activeFilter.toLowerCase());
+
+  if(!items.length){ list.innerHTML = `<div class="muted small" style="padding:10px">No tournaments matching category</div>`; return; }
+
+  list.innerHTML = items.map(m => `
+    <div class="card-tournament" onclick="openMatchDetail('${m.id}')">
+      <img src="${escapeHtml(m.image || 'https://via.placeholder.com/400x180')}" alt="">
+      <div class="row between" style="margin-top:10px">
+        <div class="h3">${escapeHtml(m.title)}</div>
+        <span class="badge ${m.status==='live'?'green':'blue'}">${m.status||'upcoming'}</span>
+      </div>
+      <div class="kv-box">
+        <span>${m.gameType || 'CS'}</span>
+        <span>${m.teamMode || 'SOLO'}</span>
+        <span>${m.mapType || 'BERMUDA'}</span>
+        <span>Entry: ${fmtMoney(m.entryFee)}</span>
+        <span>Win: ${fmtMoney(m.winPrize)}</span>
+        <span>Kill: ${fmtMoney(m.perKillPrize)}</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+function openMatchDetail(id){
+  const m = S.matches.find(x => x.id === id);
+  if(!m) return;
+  const isJoined = S.joinedMatches.some(j => j.matchId === id);
+
+  showModal(`
+    <div class="row between" style="margin-bottom:10px"><div class="h2">${escapeHtml(m.title)}</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <img src="${escapeHtml(m.image)}" style="width:100%;height:150px;object-fit:cover;border-radius:14px">
+    <div class="kv-box" style="margin-top:10px">
+      <span>Mode: ${m.gameType}</span>
+      <span>Team: ${m.teamMode}</span>
+      <span>Map: ${m.mapType}</span>
+      <span>Entry Fee: ${fmtMoney(m.entryFee)}</span>
+      <span>Win Prize: ${fmtMoney(m.winPrize)}</span>
+      <span>Per Kill: ${fmtMoney(m.perKillPrize)}</span>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted)">Rules: ${escapeHtml(m.rule || 'Fair play required.')}</div>
+    <div style="margin-top:14px">
+      ${isJoined 
+        ? `<button class="success-btn" style="width:100%" disabled>✓ Joined Tournament</button>` 
+        : `<button class="primary-btn" style="width:100%" onclick="joinMatch('${m.id}', ${m.entryFee || 0})">Join Match Now (${fmtMoney(m.entryFee)})</button>`}
+    </div>
+  `);
+}
+
+async function joinMatch(matchId, fee){
+  if(!requirePhone()) return;
+  const userBal = Number(S.profile?.balance || 0);
+  if(userBal < fee) return toast("Insufficient balance! Add cash.", "warn");
+
+  const userRef = db.collection("profiles").doc(S.profile.id);
+  await db.runTransaction(async t => {
+    const snap = await t.get(userRef);
+    const curr = Number(snap.data()?.balance || 0);
+    if(curr < fee) throw new Error("Insufficient funds");
+    
+    t.set(userRef, { balance: curr - fee }, { merge: true });
+    t.set(db.collection("joinedMatches").doc(), {
+      userId: S.user.email,
+      matchId: matchId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    t.set(db.collection("transactions").doc(), {
+      userId: S.user.email,
+      type: "match_entry",
+      amount: fee,
+      status: "success",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  });
+
+  closeModal();
+  toast("Successfully joined match!");
+}
+
+// 1-Tap Copy Room ID & Password (ONLY SHOWN TO JOINED USERS)
+function renderJoinedMatches(){
+  const list = $("#joinedMatchesList");
+  if(!S.joinedMatches.length){ list.innerHTML = `<div class="muted small">No matches joined yet</div>`; return; }
+
+  list.innerHTML = S.joinedMatches.map(j => {
+    const m = S.matches.find(x => x.id === j.matchId) || {};
+    // Only joined users have access to this tab & view
+    const room = m.roomId || 'Waiting for Admin...';
+    const pass = m.password || 'Waiting...';
+    return `
+      <div class="card" style="margin-bottom:8px">
+        <div class="row between">
+          <div class="h3">${escapeHtml(m.title || 'Tournament')}</div>
+          <span class="badge blue">${m.status || 'upcoming'}</span>
+        </div>
+        <div style="margin-top:8px;font-family:monospace;font-size:12px;background:rgba(0,0,0,.3);padding:10px;border-radius:10px">
+          <div class="row between">
+            <span>Room ID: <b style="color:var(--blue);cursor:pointer" onclick="copyToClipboard('${escapeHtml(room)}')">${escapeHtml(room)}</b></span>
+            ${m.roomId ? `<button class="outline-btn" style="padding:2px 8px;font-size:10px" onclick="copyToClipboard('${escapeHtml(m.roomId)}')">Copy Room</button>` : ''}
+          </div>
+          <div class="row between" style="margin-top:6px">
+            <span>Password: <b style="color:var(--text);cursor:pointer" onclick="copyToClipboard('${escapeHtml(pass)}')">${escapeHtml(pass)}</b></span>
+            ${m.password ? `<button class="outline-btn" style="padding:2px 8px;font-size:10px" onclick="copyToClipboard('${escapeHtml(m.password)}')">Copy Pass</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// WINNERS TAB & CLAIM PRIZE SYSTEM
+function renderWinners(){
+  const list = $("#userWinnersList");
+  if(!S.winners.length){ list.innerHTML = `<div class="muted small">No winners declared yet</div>`; return; }
+
+  const myFn2mId = (S.profile?.userId || '').trim().toLowerCase();
+  const myEmail = (S.profile?.email || '').trim().toLowerCase();
+
+  list.innerHTML = S.winners.map(w => {
+    const declaredId = String(w.userIdentifier || '').trim().toLowerCase();
+    const isMyWin = (myFn2mId && declaredId === myFn2mId) || (myEmail && declaredId === myEmail);
+    const isPaid = !!w.paid;
+
+    let actionBadge = '';
+    if (isPaid) {
+      actionBadge = `<span class="badge green">✓ Claimed</span>`;
+    } else if (isMyWin) {
+      actionBadge = `<button class="success-btn" style="padding:4px 10px;font-size:11px" onclick="claimPrize('${w.id}', ${w.prize || 0})">🏆 Claim Prize</button>`;
+    } else {
+      actionBadge = `<span class="badge amber">Declared</span>`;
+    }
+
+    return `
+      <div class="card row between" style="margin-bottom:8px">
+        <div>
+          <div class="h3">Rank #${w.rank} - ${escapeHtml(w.userIdentifier)}</div>
+          <div class="tiny muted">Prize: ${fmtMoney(w.prize)}</div>
+        </div>
+        <div>
+          ${actionBadge}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// User Action: Claim Winning Prize Money to Wallet Balance
+async function claimPrize(winnerDocId, prizeAmt){
+  if(!winnerDocId || prizeAmt <= 0) return;
+
+  try {
+    const userRef = db.collection("profiles").doc(S.profile.id);
+    const winnerRef = db.collection("winners").doc(winnerDocId);
+
+    await db.runTransaction(async t => {
+      const winnerSnap = await t.get(winnerRef);
+      if(!winnerSnap.exists) throw new Error("Winner record missing");
+      if(winnerSnap.data().paid) throw new Error("Prize already claimed!");
+
+      const userSnap = await t.get(userRef);
+      const currentBal = Number(userSnap.data()?.balance || 0);
+
+      // Add prize amount to user wallet balance
+      t.set(userRef, { balance: currentBal + Number(prizeAmt) }, { merge: true });
+
+      // Mark winner entry as claimed/paid
+      t.update(winnerRef, { 
+        paid: true,
+        claimedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Record transaction
+      t.set(db.collection("transactions").doc(), {
+        userId: S.user.email,
+        type: "tournament_prize",
+        amount: prizeAmt,
+        status: "success",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    toast(`Congratulations! ${fmtMoney(prizeAmt)} added to wallet!`, "good");
+  } catch(err) {
+    toast(err.message || "Failed to claim prize", "bad");
+  }
+}
+
+// TRANSACTION HISTORY (AUTO-CLEARED AFTER 24 HOURS)
+function renderHistory(){
+  const list = $("#walletHistoryList");
+  const now = Date.now();
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+
+  const sortedTransactions = [...S.transactions].sort((a,b) => {
+    const tA = a.createdAt ? (a.createdAt.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime()) : Date.now();
+    const tB = b.createdAt ? (b.createdAt.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime()) : Date.now();
+    return tB - tA;
+  });
+
+  const recentTransactions = sortedTransactions.filter(t => {
+    if(!t.createdAt) return true;
+    const timeMs = t.createdAt.seconds ? t.createdAt.seconds * 1000 : new Date(t.createdAt).getTime();
+    return (now - timeMs) <= twentyFourHours;
+  });
+
+  if(!recentTransactions.length){ list.innerHTML = `<div class="muted small">No recent transactions found</div>`; return; }
+  
+  list.innerHTML = recentTransactions.map(t => `
+    <div class="card row between" style="margin-bottom:8px">
+      <div>
+        <div class="h3" style="text-transform:capitalize">${escapeHtml((t.type || 'Transaction').replace('_', ' '))}</div>
+        <div class="tiny muted">${ts(t.createdAt)}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="h3">${fmtMoney(t.amount)}</div>
+        <span class="badge ${t.status==='success'?'green':t.status==='rejected'?'red':'amber'}">${t.status || 'pending'}</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+// Deposit Cash Flow
+$("#addCashBtn").onclick = ()=>{
+  if(!requirePhone()) return;
+  showModal(`
+    <div class="row between" style="margin-bottom:12px"><div class="h2">Add Cash</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <div class="muted small" style="margin-bottom:10px">Select amount to pay via UPI Link</div>
+    <div class="grid grid-2" id="payOptionGrid" style="margin-bottom:12px">
+      ${S.paymentUrls.map(p => `
+        <button class="primary-btn" style="padding:10px;text-align:center" onclick="redirectToPay(${p.amount}, '${escapeHtml(p.upiUrl)}')">
+          <div class="h2">${fmtMoney(p.amount)}</div>
+          <div class="tiny" style="opacity:0.9">1-Click Pay</div>
+        </button>
+      `).join("")}
+    </div>
+    <label>Payment Link / Phone Number (Max 10 Digits)</label>
+    <input id="depPhone" type="tel" maxlength="10" placeholder="Enter 10-digit Phone No." oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    <label>Transaction ID / UTR No. (Alphanumeric)</label>
+    <input id="depUtr" type="text" placeholder="Enter UTR / Transaction ID (Letters & Numbers)">
+    <button class="success-btn" id="btnSubmitDep" style="width:100%;margin-top:14px">Submit Deposit Request</button>
+  `);
+
+  $("#btnSubmitDep").onclick = async ()=>{
+    const phone = $("#depPhone").value.trim();
+    const utr = $("#depUtr").value.trim();
+
+    if(phone.length !== 10) return toast("Enter valid 10-digit Phone Number", "warn");
+    if(!utr) return toast("Transaction ID / UTR is required", "warn");
+    if(!S.selectedPayAmount) return toast("Please select a payment amount button above first", "warn");
+
+    await db.collection("transactions").add({
+      userId: S.user.email,
+      type: "deposit",
+      amount: S.selectedPayAmount,
+      utr: utr,
+      phone: phone,
+      status: "pending",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    closeModal();
+    toast("Deposit request submitted!");
+  };
+};
+
+function redirectToPay(amt, upiUrl){
+  S.selectedPayAmount = amt;
+  if(upiUrl){
+    window.open(upiUrl, "_blank");
+    toast(`Redirecting to pay ${fmtMoney(amt)}...`);
+  } else {
+    toast(`Selected ${fmtMoney(amt)}. Enter details below.`);
+  }
+}
+
+// Withdraw Flow
+$("#withdrawCashBtn").onclick = ()=>{
+  if(!requirePhone()) return;
+  showModal(`
+    <div class="row between" style="margin-bottom:12px"><div class="h2">Withdraw Cash</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <label>UPI ID (e.g. name@upi)</label>
+    <input id="wUpiId" placeholder="name@upi">
+    <label>Withdraw Amount (Max ₹300)</label>
+    <input id="wAmount" type="number" placeholder="100" max="300">
+    <button class="success-btn" id="btnSubmitWithdraw" style="width:100%;margin-top:14px">Submit Withdrawal</button>
+  `);
+
+  $("#btnSubmitWithdraw").onclick = async ()=>{
+    const upiId = $("#wUpiId").value.trim();
+    const amt = moneyNum($("#wAmount").value);
+    const currBal = Number(S.profile?.balance || 0);
+
+    if(!upiId) return toast("Enter valid UPI ID", "warn");
+    if(amt <= 0 || amt > 300) return toast("Amount must be between ₹1 and ₹300", "warn");
+    if(amt > currBal) return toast("Insufficient wallet balance", "warn");
+
+    const userRef = db.collection("profiles").doc(S.profile.id);
+    await db.runTransaction(async t => {
+      const snap = await t.get(userRef);
+      const b = Number(snap.data()?.balance || 0);
+      if(b < amt) throw new Error("Low balance");
+
+      t.set(userRef, { balance: b - amt }, { merge: true });
+      t.set(db.collection("transactions").doc(), {
+        userId: S.user.email,
+        type: "withdraw",
+        amount: amt,
+        upiId: upiId,
+        status: "pending",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    closeModal();
+    toast("Withdrawal submitted!");
+  };
+};
+
+function requirePhone(){
+  if(!S.profile?.phone){
+    toast("Please add your phone number first!", "warn");
+    $("#btnEditProfile").click();
+    return false;
+  }
+  return true;
+}
+
+$("#btnEditProfile").onclick = ()=>{
+  const curPhone = S.profile?.phone || '';
+  showModal(`
+    <div class="row between" style="margin-bottom:12px"><div class="h2">Edit Profile</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <label>Username</label>
+    <input id="editUsername" value="${escapeHtml(S.profile?.username || '')}">
+    <label>Working Phone Number</label>
+    <input id="editPhone" type="tel" maxlength="10" placeholder="Enter 10-digit phone number" value="${escapeHtml(curPhone)}" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    <button class="primary-btn" id="btnSaveProfile" style="width:100%;margin-top:14px">Save Changes</button>
+  `);
+
+  $("#btnSaveProfile").onclick = async ()=>{
+    const uname = $("#editUsername").value.trim();
+    const phone = $("#editPhone").value.trim();
+    if(!uname) return toast("Username required", "warn");
+    if(phone.length !== 10) return toast("Enter valid 10-digit phone number", "warn");
+    await db.collection("profiles").doc(S.profile.id).set({ username: uname, phone: phone }, { merge: true });
+    closeModal();
+    toast("Profile updated!");
+  };
+};
+
+$("#btnHelpDesk").onclick = ()=> {
+  const link = S.settings.telegramUrl || "https://t.me/";
+  window.open(link, "_blank");
+};
+</script>
+</body>
+</html>
