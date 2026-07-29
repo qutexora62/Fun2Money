@@ -407,17 +407,6 @@ if ('serviceWorker' in navigator) {
             <div id="subAdminTable" class="table"></div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="h3" style="margin-bottom:10px">Broadcast Notification</div>
-          <label>Title</label>
-          <input id="bcTitle" placeholder="Announcement Title">
-          <label>Message</label>
-          <textarea id="bcMsg" placeholder="Type notification message..."></textarea>
-          <label>Target User (Email or 'all')</label>
-          <input id="bcTarget" value="all">
-          <button class="success-btn" id="sendBroadcastBtn" style="width:100%;margin-top:12px">Send Broadcast</button>
-        </div>
       </div>
 
       <!-- PAGE: SETTINGS -->
@@ -1027,9 +1016,9 @@ function renderUsers(){
       const uPhone = escapeHtml(p.phone || '-');
       return `
       <div class="table-row">
-        <div style="overflow:hidden;text-overflow:ellipsis" title="${uName} (${uEmail})">
+        <div>
           <b style="color:#FFF">${uName}</b>
-          <div class="tiny muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${uEmail}</div>
+          <div class="tiny muted">${uEmail}</div>
         </div>
         <div style="color:var(--blue);cursor:pointer;font-weight:700" onclick="copyToClipboard('${userFn2mId}')" title="Tap to copy">
           ${userFn2mId}
@@ -1188,8 +1177,8 @@ function renderSubAdmins(){
   if(!S.subProfiles.length){ list.innerHTML = `<div class="muted small" style="padding:10px">No sub-admins configured</div>`; return; }
   list.innerHTML = `
     <div class="table-row head">
+      <div>Name & Email</div>
       <div>SB ID</div>
-      <div>Email</div>
       <div>Phone</div>
       <div>Password</div>
       <div>Balance</div>
@@ -1199,12 +1188,16 @@ function renderSubAdmins(){
     ${S.subProfiles.map(s => {
       const sbId = escapeHtml(s.sbId || '-');
       const sEmail = escapeHtml(s.email || 'N/A');
+      const sName = escapeHtml(s.username || s.email?.split('@')[0] || 'SubAdmin');
       const sPhone = escapeHtml(s.phone || '-');
       const sPass = escapeHtml(s.password || 'N/A');
       return `
       <div class="table-row">
+        <div>
+          <b style="color:#FFF">${sName}</b>
+          <div class="tiny muted">${sEmail}</div>
+        </div>
         <div style="color:var(--blue);cursor:pointer;font-weight:700" onclick="copyToClipboard('${sbId}')" title="Tap to copy">${sbId}</div>
-        <div style="overflow:hidden;text-overflow:ellipsis;color:#CBD5E1">${sEmail}</div>
         <div style="font-family:monospace;color:#CBD5E1">${sPhone}</div>
         <div style="font-family:monospace;color:#CBD5E1">${sPass}</div>
         <div style="font-weight:700">${fmtMoney(s.balance)}</div>
@@ -1220,7 +1213,8 @@ function buildSubEmailOptions(){
   return S.profiles.map(p => {
     const e = escapeHtml(p.email || '');
     const fid = escapeHtml(p.userId || p.id || '');
-    return `<option value="${e}" data-fn2m="${fid}" data-phone="${escapeHtml(p.phone||'')}" data-pass="${escapeHtml(p.password||'')}" data-bal="${p.balance||0}">${e} (${fid})</option>`;
+    const un = escapeHtml(p.username || '');
+    return `<option value="${e}" data-fn2m="${fid}" data-phone="${escapeHtml(p.phone||'')}" data-pass="${escapeHtml(p.password||'')}" data-bal="${p.balance||0}" data-user="${un}">${e} (${fid})</option>`;
   }).join('');
 }
 $("#addSubBtn").onclick = ()=>{
@@ -1241,11 +1235,12 @@ $("#addSubBtn").onclick = ()=>{
     const phone = opt?.dataset.phone || '';
     const pass = opt?.dataset.pass || '';
     const bal = Number(opt?.dataset.bal || 0);
+    const userName = opt?.dataset.user || email.split('@')[0];
     const accessKey = $("#sKey").value.trim();
     if(!/^FN2M-CUTE[A-Z0-9]{4}$/.test(accessKey)) return toast("Invalid access key format (FN2M-CUTEXXXX)", "warn");
     const sbId = fn2mId.replace(/^FN2M-/i, 'SB-');
     await db.collection("subProfiles").doc(email).set({
-      email, sbId, accessKey, phone, password: pass, balance: bal,
+      email, sbId, accessKey, phone, password: pass, balance: bal, username: userName,
       status: "active",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
@@ -1258,22 +1253,22 @@ $("#addSubBtn").onclick = ()=>{
   };
 };
 async function deleteSubAdmin(docId, email){
-  if(!confirm(`Remove SubAdmin ${email}?`)) return;
+  if(!confirm(`Restore ${email} to normal user?`)) return;
+  const snap = await db.collection("subProfiles").doc(docId).get();
+  if(!snap.exists) return toast("SubAdmin record not found", "warn");
+  const data = snap.data();
+  const originalFn2m = (data.sbId||'').replace(/^SB-/i, 'FN2M-');
+  const newId = originalFn2m || "FN2M-"+randId(6);
+  await db.collection("profiles").doc(newId).set({
+    userId: newId, username: data.username || email.split('@')[0],
+    email: data.email || email, password: data.password || '',
+    phone: data.phone || '', balance: Number(data.balance||0),
+    isBanned: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
   await db.collection("subProfiles").doc(docId).delete();
-  toast("SubAdmin removed");
+  toast("SubAdmin restored to normal user");
 }
-
-$("#sendBroadcastBtn").onclick = async ()=>{
-  const title = $("#bcTitle").value.trim();
-  const message = $("#bcMsg").value.trim();
-  const targetUser = $("#bcTarget").value.trim() || "all";
-  if(!title || !message) return toast("Title & message required", "warn");
-
-  await rtdb.ref("notifications").push({ title, message, targetUser, createdAt: Date.now() });
-  await db.collection("notifications").add({ title, message, targetUser, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  toast("Broadcast sent");
-  $("#bcTitle").value = ""; $("#bcMsg").value = "";
-};
 
 function renderGeneralSettings(){
   $("#setSignupBonus").value = S.settings.signupBonus || 0;
