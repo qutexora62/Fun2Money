@@ -83,12 +83,12 @@ label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10p
 .item.clickable:active{background:rgba(255,255,255,.08)}
 .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue),var(--green));font-weight:900;font-size:18px;flex-shrink:0}
 .avatar-img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--stroke)}
-.navbar{position:sticky;bottom:0;z-index:18;margin-top:auto;background:linear-gradient(180deg,rgba(6,11,24,.02),rgba(6,11,24,.85),rgba(6,11,24,.98));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:6px 12px calc(8px + var(--safe-bottom));border-top:1px solid var(--stroke)}
-.bottom-nav{display:flex;gap:4px;justify-content:space-around}
-.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600;border-radius:var(--radius-md);min-height:auto;transition:color .2s}
-.tab-btn .tab-icon{font-size:20px;line-height:1;transition:transform .2s}
-.tab-btn.active{color:var(--blue);background:rgba(79,110,247,.1)}
-.tab-btn.active .tab-icon{transform:scale(1.1)}
+.bottom-nav-bar{flex-shrink:0;height:65px;background:#050913;border-top:1px solid rgba(255,255,255,.08);padding:6px 12px 8px;z-index:30}
+.bottom-nav-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:center;height:100%}
+.nav-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;border-radius:14px;background:transparent;border:none;color:#8E9BAE;font-size:11px;font-weight:600;transition:all .2s ease;cursor:pointer}
+.nav-tab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.nav-tab.active{color:#5271FF;background:rgba(24,34,68,.9);box-shadow:inset 0 0 0 1px rgba(79,110,247,.2)}
+.nav-tab.active svg{stroke:#5271FF;fill:none}
 .modal-backdrop,.drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:30;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal,.drawer{position:fixed;z-index:31;background:linear-gradient(180deg,rgba(20,30,55,.98),rgba(12,18,35,.98));border:1px solid var(--stroke);box-shadow:var(--elevation3)}
@@ -217,7 +217,7 @@ function openDrawer(){ $(".drawer-backdrop").classList.remove("hidden"); $(".dra
 function closeDrawer(){ $(".drawer-backdrop").classList.add("hidden"); $(".drawer").classList.remove("open"); }
 function navSet(page){
   S.currentTab = page;
-  $$("[data-tab]").forEach(b => b.classList.toggle("active", b.dataset.tab === page));
+  $$(".nav-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === page));
   $$(".page").forEach(p => p.classList.remove("active"));
   const n = document.getElementById("page-"+page);
   if(n) n.classList.add("active");
@@ -280,29 +280,38 @@ function buildAppUI(){
       <button class="icon-btn" id="openDrawerBtn">☰</button>
     </div>
     <div class="page active" id="page-home">
-      <div class="section">
-        <div class="grid grid-2" id="statsGrid"></div>
-        <div class="card" style="padding:6px;margin-top:12px">
-          <div class="row" style="gap:6px;overflow-x:auto;padding-bottom:2px">
-            <button class="pill-btn active" data-filter="All">All Matches</button>
-            <button class="pill-btn" data-filter="upcoming">Upcoming</button>
-            <button class="pill-btn" data-filter="live">Live</button>
-            <button class="pill-btn" data-filter="coming-soon">Coming Soon</button>
-          </div>
+      <div class="card" style="padding:6px;margin-bottom:12px">
+        <div class="row" style="gap:6px;overflow-x:auto;padding-bottom:2px">
+          <button class="pill-btn active" data-filter="All">All Matches</button>
+          <button class="pill-btn" data-filter="upcoming">Upcoming</button>
+          <button class="pill-btn" data-filter="live">Live</button>
+          <button class="pill-btn" data-filter="coming-soon">Coming Soon</button>
         </div>
-        <div id="homeMatchList" class="grid"></div>
       </div>
+      <div id="homeMatchList" class="grid"></div>
     </div>
     <div class="page" id="page-tournaments"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div class="h3">All Tournaments</div></div><div class="list" id="allMatchList" style="margin-top:12px"></div></div></div></div>
     <div class="page" id="page-wallet"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div><div class="muted small">Balance</div><div class="h1" id="walletBalance">₹0</div></div></div><div class="hr"></div><div class="h3">Recent Transactions</div><div id="transactionList"></div></div></div></div>
     <div class="page" id="page-profile"><div class="section"><div class="card" style="padding:14px;text-align:center"><div class="avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto" id="profileAvatar">U</div><div class="h3" style="margin-top:8px" id="profileName">User</div><div class="tiny muted" id="profileEmail"></div></div><div class="card soft" style="padding:14px;margin-top:12px"><div class="list" id="profileDetails"></div></div></div></div>
     <div class="page" id="page-subadmin"><div class="section"><div class="card" style="padding:14px"><div class="row between"><div class="h3">Sub Admin - Tournaments</div><button class="primary-btn" id="subAddTournament">Create</button></div><div class="list" id="subMatchList" style="margin-top:12px"></div></div></div></div>
-    <div class="navbar">
-      <div class="bottom-nav" id="bottomNav">
-        <button class="tab-btn active" data-tab="home"><span class="tab-icon">🏠</span>Home</button>
-        <button class="tab-btn" data-tab="tournaments"><span class="tab-icon">🏆</span>Matches</button>
-        <button class="tab-btn" data-tab="wallet"><span class="tab-icon">💳</span>Wallet</button>
-        <button class="tab-btn" data-tab="profile"><span class="tab-icon">👤</span>Profile</button>
+    <div class="bottom-nav-bar">
+      <div class="bottom-nav-grid" id="bottomNav">
+        <button class="nav-tab active" data-tab="home">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-tab" data-tab="tournaments">
+          <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7.5"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+          <span>Matches</span>
+        </button>
+        <button class="nav-tab" data-tab="wallet">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><circle cx="16" cy="12" r="2"/></svg>
+          <span>Wallet</span>
+        </button>
+        <button class="nav-tab" data-tab="profile">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Profile</span>
+        </button>
       </div>
     </div>
   </div>
@@ -378,9 +387,6 @@ function listenAccount(email){
 function renderStats(){
   const p = S.profile || {};
   const bal = Number(p.balance || 0);
-  $("#statsGrid").innerHTML = `
-    <div class="stat"><div class="muted small">Balance</div><div class="value">${fmtMoney(bal)}</div></div>
-    <div class="stat"><div class="muted small">Tournaments</div><div class="value">${S.matches.length}</div></div>`;
   $("#walletBalance").textContent = fmtMoney(bal);
 }
 function renderHomeMatches(){
@@ -466,8 +472,8 @@ function showAccessKeyModal(){
     const nav = $("#bottomNav");
     if(!$("#tab-subadmin")){
       const btn = document.createElement("button");
-      btn.className = "tab-btn"; btn.dataset.tab = "subadmin"; btn.id = "tab-subadmin";
-      btn.innerHTML = '<span class="tab-icon">⚙️</span>Sub Admin';
+      btn.className = "nav-tab"; btn.dataset.tab = "subadmin"; btn.id = "tab-subadmin";
+      btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>Sub Admin</span>';
       btn.onclick = ()=> navSet("subadmin");
       nav.appendChild(btn);
     }
@@ -531,7 +537,7 @@ function wireAppUI(){
   $("#drawerLogout").onclick = ()=>{ auth.signOut(); S.subAdminUnlocked = false; };
   $("#drawerHelp").onclick = ()=> window.open("https://chat.whatsapp.com/KiRYSqnMHbhLhpx4OC1IDD", "_blank");
   $("#drawerAccessKey").onclick = showAccessKeyModal;
-  $$("[data-tab]").forEach(b => b.onclick = ()=> navSet(b.dataset.tab));
+  $$(".nav-tab").forEach(b => b.onclick = ()=> navSet(b.dataset.tab));
   $$("[data-filter]").forEach(chip => {
     chip.onclick = ()=>{
       $$("[data-filter]").forEach(c=>c.classList.remove("active"));
