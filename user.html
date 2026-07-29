@@ -467,9 +467,9 @@ if ('serviceWorker' in navigator) {
       <div class="tiny muted" style="margin-top:4px">FN2M ID: <b id="profileFn2mId" style="color:var(--blue);cursor:pointer">FN2M-0000</b></div>
     </div>
     <div class="grid">
-      <button class="ghost-btn" id="btnEditProfile" style="justify-content:flex-start">✏️ Edit Profile Details</button>
-      <button class="ghost-btn" id="btnHelpDesk" style="justify-content:flex-start">💬 Support & Telegram</button>
-      <button class="danger-btn" id="btnLogout" style="width:100%;margin-top:10px">🚪 Sign Out</button>
+      <button class="ghost-btn" id="btnEditProfile" style="justify-content:flex-start">🔏  Update Profile Details</button>
+      <button class="ghost-btn" id="btnHelpDesk" style="justify-content:flex-start">🆘️ Support & Feedback</button>
+      <button class="danger-btn" id="btnLogout" style="width:100%;margin-top:10px">🚯 Sign Out</button>
     </div>
     <div style="margin-top:20px;font-size:11px;color:var(--muted)" id="appDescFooter">
       Fun2Money Esports Platform
@@ -1135,15 +1135,14 @@ $("#addCashBtn").onclick = ()=>{
       ${S.paymentUrls.map(p => `
         <button class="primary-btn" style="padding:10px;text-align:center" onclick="redirectToPay(${p.amount}, '${escapeHtml(p.upiUrl)}')">
           <div class="h2">${fmtMoney(p.amount)}</div>
-          <div class="tiny" style="opacity:0.9">1-Click Pay</div>
         </button>
       `).join("")}
     </div>
-    <label>Payment Link / Phone Number (Max 10 Digits)</label>
+    <label>Payment Link Phone Number</label>
     <input id="depPhone" type="tel" maxlength="10" placeholder="Enter 10-digit Phone No." oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-    <label>Transaction ID / UTR No. (Alphanumeric)</label>
-    <input id="depUtr" type="text" placeholder="Enter UTR / Transaction ID (Letters & Numbers)">
-    <button class="success-btn" id="btnSubmitDep" style="width:100%;margin-top:14px">Submit Deposit Request</button>
+    <label>Transaction ID Or' UTR No.</label>
+    <input id="depUtr" type="text" placeholder="Enter UTR No. Or' Transaction ID">
+    <button class="success-btn" id="btnSubmitDep" style="width:100%;margin-top:14px">Submit Deposit</button>
   `);
 
   $("#btnSubmitDep").onclick = async ()=>{
@@ -1186,7 +1185,7 @@ $("#withdrawCashBtn").onclick = ()=>{
     <div class="row between" style="margin-bottom:12px"><div class="h2">Withdraw Cash</div><button class="icon-btn" onclick="closeModal()">✕</button></div>
     <label>UPI ID (e.g. name@upi)</label>
     <input id="wUpiId" placeholder="name@upi">
-    <label>Withdraw Amount (Min ₹80 / Max ₹300)</label>
+    <label>Withdraw Amount (Note : 2 Withdraw/day)</label>
     <input id="wAmount" type="number" placeholder="80" min="80" max="300">
     <button class="success-btn" id="btnSubmitWithdraw" style="width:100%;margin-top:14px">Submit Withdrawal</button>
   `);
