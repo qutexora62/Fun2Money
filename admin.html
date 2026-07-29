@@ -172,7 +172,7 @@ label{display:block;font-size:12px;color:var(--muted);margin:8px 2px 4px;font-we
   z-index:30;
 }
 .bottom-nav-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:center;height:100%;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:center;height:100%;
 }
 .nav-tab{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -386,7 +386,18 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
 
-        <!-- SubAdmin Management -->
+        <!-- Requests & Finance Card -->
+        <div class="card">
+          <div class="row between" style="margin-bottom:10px">
+            <div class="h3">Deposit & Withdraw Requests</div>
+            <span class="badge red">Pending Actions</span>
+          </div>
+          <div id="pendingRequestsList" class="grid"></div>
+        </div>
+      </div>
+
+      <!-- PAGE: SUBADMIN -->
+      <div class="page-view hidden" id="page-subadmin">
         <div class="card">
           <div class="row between" style="margin-bottom:8px">
             <div class="h3">SubAdmin</div>
@@ -395,15 +406,6 @@ if ('serviceWorker' in navigator) {
           <div class="table-container">
             <div id="subAdminTable" class="table"></div>
           </div>
-        </div>
-
-        <!-- Requests & Finance Card -->
-        <div class="card">
-          <div class="row between" style="margin-bottom:10px">
-            <div class="h3">Deposit & Withdraw Requests</div>
-            <span class="badge red">Pending Actions</span>
-          </div>
-          <div id="pendingRequestsList" class="grid"></div>
         </div>
       </div>
 
@@ -458,6 +460,12 @@ if ('serviceWorker' in navigator) {
             <circle cx="12" cy="7" r="4"/>
           </svg>
           <span>Users</span>
+        </button>
+        <button class="nav-tab" data-tab="subadmin">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>SubAdmin</span>
         </button>
         <button class="nav-tab" data-tab="settings">
           <svg viewBox="0 0 24 24">
@@ -1169,7 +1177,13 @@ function renderSubAdmins(){
   const list = $("#subAdminTable");
   if(!S.subProfiles.length){ list.innerHTML = `<div class="muted small" style="padding:10px">No sub-admins configured</div>`; return; }
   list.style.minWidth = "auto";
-  list.innerHTML = S.subProfiles.map(s => {
+  list.innerHTML = `
+    <div class="table-row head" style="grid-template-columns:1fr auto auto;min-width:0">
+      <div>FN2M ID</div>
+      <div>Edit</div>
+      <div>Delete</div>
+    </div>
+    ${S.subProfiles.map(s => {
     const sbId = escapeHtml(s.sbId || '-');
     const sEmail = escapeHtml(s.email || 'N/A');
     return `<div class="table-row" style="grid-template-columns:1fr auto auto;min-width:0">
@@ -1177,7 +1191,8 @@ function renderSubAdmins(){
       <div><button class="outline-btn" onclick="editSubAdmin('${escapeHtml(s.id)}')" style="padding:3px 8px;font-size:10px">Edit</button></div>
       <div><button class="danger-btn" onclick="deleteSubAdmin('${escapeHtml(s.id)}', '${sEmail}')" style="padding:3px 8px;font-size:10px">Delete</button></div>
     </div>`;
-  }).join('');
+  }).join('')}
+  `;
 }
 
 function buildSubEmailOptions(){
