@@ -713,6 +713,7 @@ function initDataListeners(){
   db.collection("subProfiles").onSnapshot(snap => {
     S.subProfiles = snap.docs.map(d=>({id:d.id, ...d.data()}));
     renderSubAdmins();
+    renderUsers();
   });
   db.collection("paymentUrls").onSnapshot(snap => {
     S.paymentUrls = snap.docs.map(d=>({id:d.id, ...d.data()}));
