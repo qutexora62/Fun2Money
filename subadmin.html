@@ -284,7 +284,7 @@ function randId(len=10){
   return out;
 }
 function randomAccessKey(){
-  return "FN2M-" + Math.random().toString(36).slice(2,6).toUpperCase();
+  return "FN2M-CUTE" + Math.random().toString(36).slice(2,6).toUpperCase();
 }
 function escapeHtml(s=""){
   return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
@@ -487,7 +487,7 @@ function subLoginForm(){
     <label>Email</label><input id="email" type="email" placeholder="name@gmail.com">
     <label>Access Key</label><input id="accessKey" placeholder="FN2M-CUTEXXXX">
     <button class="primary-btn" style="width:100%;margin-top:14px" id="loginBtn">Login</button>
-    <div class="tiny muted" style="margin-top:12px">Gmail only. Access key format: <code>FN2M-XXXX</code></div>
+    <div class="tiny muted" style="margin-top:12px">Gmail only. Access key regex: <code>^FN2M-CUTE[A-Z0-9]{4}$</code></div>
   `;
 }
 function ensureSubUI(){
@@ -578,7 +578,7 @@ async function subLogin(){
   const email = $("#email").value.trim().toLowerCase();
   const accessKey = $("#accessKey").value.trim();
   if(!/@gmail\.com$/.test(email)) return authError("Gmail only.");
-  if(!/^FN2M-[A-Z0-9]{4}$/.test(accessKey)) return authError("Invalid access key format. Use FN2M-XXXX");
+  if(!/^FN2M-CUTE[A-Z0-9]{4}$/.test(accessKey)) return authError("Invalid access key format.");
   try{
     const userCred = await auth.signInWithEmailAndPassword(email, accessKey);
     // In practice, use real email/password. For single-file simplicity, key is also auth password fallback.
